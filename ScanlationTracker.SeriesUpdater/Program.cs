@@ -1,4 +1,4 @@
-using ScanlationTracker.ChapterUpdater;
+using ScanlationTracker.SeriesUpdater;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHostedService<Worker>();

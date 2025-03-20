@@ -15,7 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanlationTracker.Core", "S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanlationTracker.Infrastructure", "ScanlationTracker.Infrastructure\ScanlationTracker.Infrastructure.csproj", "{DF7CDB93-BA53-4B36-A8B7-246C72FBDAB2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanlationTracker.ChapterUpdater", "ScanlationTracker.ChapterUpdater\ScanlationTracker.ChapterUpdater.csproj", "{AE247BBB-9ADA-44D3-91EF-AF64DAFFE642}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanlationTracker.SeriesUpdater", "ScanlationTracker.SeriesUpdater\ScanlationTracker.SeriesUpdater.csproj", "{EE9B8888-CF89-4751-B461-3223D3D75F80}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,10 +35,10 @@ Global
 		{DF7CDB93-BA53-4B36-A8B7-246C72FBDAB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF7CDB93-BA53-4B36-A8B7-246C72FBDAB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF7CDB93-BA53-4B36-A8B7-246C72FBDAB2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AE247BBB-9ADA-44D3-91EF-AF64DAFFE642}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AE247BBB-9ADA-44D3-91EF-AF64DAFFE642}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AE247BBB-9ADA-44D3-91EF-AF64DAFFE642}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AE247BBB-9ADA-44D3-91EF-AF64DAFFE642}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE9B8888-CF89-4751-B461-3223D3D75F80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE9B8888-CF89-4751-B461-3223D3D75F80}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE9B8888-CF89-4751-B461-3223D3D75F80}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE9B8888-CF89-4751-B461-3223D3D75F80}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

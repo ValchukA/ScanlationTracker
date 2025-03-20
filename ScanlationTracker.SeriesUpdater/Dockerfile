@@ -10,19 +10,19 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["ScanlationTracker.ChapterUpdater/ScanlationTracker.ChapterUpdater.csproj", "ScanlationTracker.ChapterUpdater/"]
-RUN dotnet restore "./ScanlationTracker.ChapterUpdater/ScanlationTracker.ChapterUpdater.csproj"
+COPY ["ScanlationTracker.SeriesUpdater/ScanlationTracker.SeriesUpdater.csproj", "ScanlationTracker.SeriesUpdater/"]
+RUN dotnet restore "./ScanlationTracker.SeriesUpdater/ScanlationTracker.SeriesUpdater.csproj"
 COPY . .
-WORKDIR "/src/ScanlationTracker.ChapterUpdater"
-RUN dotnet build "./ScanlationTracker.ChapterUpdater.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/ScanlationTracker.SeriesUpdater"
+RUN dotnet build "./ScanlationTracker.SeriesUpdater.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./ScanlationTracker.ChapterUpdater.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./ScanlationTracker.SeriesUpdater.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "ScanlationTracker.ChapterUpdater.dll"]
+ENTRYPOINT ["dotnet", "ScanlationTracker.SeriesUpdater.dll"]
