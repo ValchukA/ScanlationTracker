@@ -1,6 +1,0 @@
-@ScanlationTracker.Api_HostAddress = http://localhost:5064
-
-GET {{ScanlationTracker.Api_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
