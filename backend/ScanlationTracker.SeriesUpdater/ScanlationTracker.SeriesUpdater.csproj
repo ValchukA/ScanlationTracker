@@ -2,6 +2,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.3" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.2" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ScanlationTracker.Infrastructure\ScanlationTracker.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -1,12 +1,12 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-COPY Directory.Build.props .
-COPY ScanlationTracker.Api/ScanlationTracker.Api.csproj ScanlationTracker.Api/
+COPY backend/Directory.Build.props .
+COPY backend/ScanlationTracker.Api/ScanlationTracker.Api.csproj ScanlationTracker.Api/
 RUN dotnet restore ScanlationTracker.Api/ScanlationTracker.Api.csproj
 
-COPY ScanlationTracker.Api ScanlationTracker.Api
-RUN dotnet publish ScanlationTracker.Api -c release -o /app /p:UseAppHost=false
+COPY backend/ScanlationTracker.Api ScanlationTracker.Api
+RUN dotnet publish ScanlationTracker.Api --no-restore -c release -o /app /p:UseAppHost=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app

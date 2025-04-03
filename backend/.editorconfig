@@ -238,6 +238,9 @@ dotnet_diagnostic.SA1633.severity = none
 # SA1600: Elements should be documented
 dotnet_diagnostic.SA1600.severity = none
 
+# SA1602: Enumeration items should be documented
+dotnet_diagnostic.SA1602.severity = none
+
 # SA1309: Field names should not begin with underscore
 dotnet_diagnostic.SA1309.severity = none
 
@@ -246,3 +249,14 @@ dotnet_diagnostic.SA1101.severity = none
 
 # CS1591: Missing XML comment for publicly visible type or member
 dotnet_diagnostic.CS1591.severity = none
+
+# S1144: Unused private types or members should be removed
+[ScanlationDbContext.cs]
+dotnet_diagnostic.S1144.severity = none
+
+# S1075: URIs should not be hardcoded
+[ScanlationTracker.Migration.Seeding/Program.cs]
+dotnet_diagnostic.S1075.severity = none
+
+[**/Migrations/*]
+generated_code = true

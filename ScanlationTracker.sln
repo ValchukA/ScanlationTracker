@@ -5,6 +5,7 @@ VisualStudioVersion = 17.13.35825.156
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFiles", "SolutionFiles", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
 		backend\.editorconfig = backend\.editorconfig
 		backend\Directory.Build.props = backend\Directory.Build.props
 	EndProjectSection
@@ -16,6 +17,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanlationTracker.Core", "backend\ScanlationTracker.Core\ScanlationTracker.Core.csproj", "{8C2AE5E9-C7CE-16A8-40D9-F90F4DD434CF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanlationTracker.Infrastructure", "backend\ScanlationTracker.Infrastructure\ScanlationTracker.Infrastructure.csproj", "{F53392C7-A9AD-749D-F237-5B2367E4356F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanlationTracker.Migration.Seeding", "backend\ScanlationTracker.Migration.Seeding\ScanlationTracker.Migration.Seeding.csproj", "{F6540108-320A-4D74-B2E3-7C1151F084C8}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose\docker-compose.dcproj", "{81DDED9D-158B-E303-5F62-77A2896D2A5A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +44,14 @@ Global
 		{F53392C7-A9AD-749D-F237-5B2367E4356F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F53392C7-A9AD-749D-F237-5B2367E4356F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F53392C7-A9AD-749D-F237-5B2367E4356F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6540108-320A-4D74-B2E3-7C1151F084C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6540108-320A-4D74-B2E3-7C1151F084C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6540108-320A-4D74-B2E3-7C1151F084C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6540108-320A-4D74-B2E3-7C1151F084C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

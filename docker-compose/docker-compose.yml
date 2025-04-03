@@ -1,0 +1,39 @@
+services:
+  scanlationtracker.api:
+    build:
+      context: ..
+      dockerfile: backend/ScanlationTracker.Api/Dockerfile
+    depends_on:
+      - scanlationtracker.migration.seeding
+    ports:
+      - 8080:8080
+
+  scanlationtracker.seriesupdater:
+    build:
+      context: ..
+      dockerfile: backend/ScanlationTracker.SeriesUpdater/Dockerfile
+    depends_on:
+      - scanlationtracker.migration.seeding
+    environment:
+      PostgreSql__ConnectionString: Host=postgresql;Username=postgres;Password=Passw0rd!;Database=ScanlationTrackerDb
+
+  scanlationtracker.migration.seeding:
+    build:
+      context: ..
+      dockerfile: backend/ScanlationTracker.Migration.Seeding/Dockerfile
+    depends_on:
+      - postgresql
+    environment:
+      PostgreSql__ConnectionString: Host=postgresql;Username=postgres;Password=Passw0rd!;Database=ScanlationTrackerDb
+
+  postgresql:
+    image: postgres:17.4
+    environment:
+      POSTGRES_PASSWORD: Passw0rd!
+    ports:
+      - 5432:5432
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+
+volumes:
+  postgresql-data:
