@@ -5,8 +5,8 @@
       "commandVersion": "1.0",
       "serviceActions": {
         "postgresql": "StartWithoutDebugging",
+        "scanlationtracker.migration.seeding": "StartWithoutDebugging",
         "scanlationtracker.api": "StartDebugging",
-        "scanlationtracker.migration.seeding": "StartDebugging",
         "scanlationtracker.seriesupdater": "StartDebugging"
       }
     }

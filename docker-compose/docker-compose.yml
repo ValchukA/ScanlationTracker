@@ -4,7 +4,8 @@ services:
       context: ..
       dockerfile: backend/ScanlationTracker.Api/Dockerfile
     depends_on:
-      - scanlationtracker.migration.seeding
+      scanlationtracker.migration.seeding:
+        condition: service_completed_successfully
     ports:
       - 8080:8080
 
@@ -13,7 +14,8 @@ services:
       context: ..
       dockerfile: backend/ScanlationTracker.SeriesUpdater/Dockerfile
     depends_on:
-      - scanlationtracker.migration.seeding
+      scanlationtracker.migration.seeding:
+        condition: service_completed_successfully
     environment:
       PostgreSql__ConnectionString: Host=postgresql;Username=postgres;Password=Passw0rd!;Database=ScanlationTrackerDb
 
@@ -22,7 +24,8 @@ services:
       context: ..
       dockerfile: backend/ScanlationTracker.Migration.Seeding/Dockerfile
     depends_on:
-      - postgresql
+      postgresql:
+        condition: service_healthy
     environment:
       PostgreSql__ConnectionString: Host=postgresql;Username=postgres;Password=Passw0rd!;Database=ScanlationTrackerDb
 
@@ -34,6 +37,9 @@ services:
       - 5432:5432
     volumes:
       - postgresql-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
 
 volumes:
   postgresql-data:
