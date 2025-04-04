@@ -22,7 +22,7 @@ namespace ScanlationTracker.Infrastructure.Database.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ScanlationTracker.Infrastructure.Database.Entities.Chapter", b =>
+            modelBuilder.Entity("ScanlationTracker.Infrastructure.Database.Entities.ChapterEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -50,10 +50,13 @@ namespace ScanlationTracker.Infrastructure.Database.Migrations
                     b.HasIndex("SeriesId", "ExternalId")
                         .IsUnique();
 
+                    b.HasIndex("SeriesId", "Number")
+                        .IsUnique();
+
                     b.ToTable("Chapters");
                 });
 
-            modelBuilder.Entity("ScanlationTracker.Infrastructure.Database.Entities.ScanlationGroup", b =>
+            modelBuilder.Entity("ScanlationTracker.Infrastructure.Database.Entities.ScanlationGroupEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -83,7 +86,7 @@ namespace ScanlationTracker.Infrastructure.Database.Migrations
                     b.ToTable("ScanlationGroups");
                 });
 
-            modelBuilder.Entity("ScanlationTracker.Infrastructure.Database.Entities.Series", b =>
+            modelBuilder.Entity("ScanlationTracker.Infrastructure.Database.Entities.SeriesEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -112,7 +115,7 @@ namespace ScanlationTracker.Infrastructure.Database.Migrations
                     b.ToTable("Series");
                 });
 
-            modelBuilder.Entity("ScanlationTracker.Infrastructure.Database.Entities.SeriesTracking", b =>
+            modelBuilder.Entity("ScanlationTracker.Infrastructure.Database.Entities.SeriesTrackingEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -134,7 +137,7 @@ namespace ScanlationTracker.Infrastructure.Database.Migrations
                     b.ToTable("SeriesTrackings");
                 });
 
-            modelBuilder.Entity("ScanlationTracker.Infrastructure.Database.Entities.User", b =>
+            modelBuilder.Entity("ScanlationTracker.Infrastructure.Database.Entities.UserEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -152,9 +155,9 @@ namespace ScanlationTracker.Infrastructure.Database.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("ScanlationTracker.Infrastructure.Database.Entities.Chapter", b =>
+            modelBuilder.Entity("ScanlationTracker.Infrastructure.Database.Entities.ChapterEntity", b =>
                 {
-                    b.HasOne("ScanlationTracker.Infrastructure.Database.Entities.Series", "Series")
+                    b.HasOne("ScanlationTracker.Infrastructure.Database.Entities.SeriesEntity", "Series")
                         .WithMany()
                         .HasForeignKey("SeriesId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -163,9 +166,9 @@ namespace ScanlationTracker.Infrastructure.Database.Migrations
                     b.Navigation("Series");
                 });
 
-            modelBuilder.Entity("ScanlationTracker.Infrastructure.Database.Entities.Series", b =>
+            modelBuilder.Entity("ScanlationTracker.Infrastructure.Database.Entities.SeriesEntity", b =>
                 {
-                    b.HasOne("ScanlationTracker.Infrastructure.Database.Entities.ScanlationGroup", "ScanlationGroup")
+                    b.HasOne("ScanlationTracker.Infrastructure.Database.Entities.ScanlationGroupEntity", "ScanlationGroup")
                         .WithMany()
                         .HasForeignKey("ScanlationGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -174,15 +177,15 @@ namespace ScanlationTracker.Infrastructure.Database.Migrations
                     b.Navigation("ScanlationGroup");
                 });
 
-            modelBuilder.Entity("ScanlationTracker.Infrastructure.Database.Entities.SeriesTracking", b =>
+            modelBuilder.Entity("ScanlationTracker.Infrastructure.Database.Entities.SeriesTrackingEntity", b =>
                 {
-                    b.HasOne("ScanlationTracker.Infrastructure.Database.Entities.Series", "Series")
+                    b.HasOne("ScanlationTracker.Infrastructure.Database.Entities.SeriesEntity", "Series")
                         .WithMany()
                         .HasForeignKey("SeriesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ScanlationTracker.Infrastructure.Database.Entities.User", "User")
+                    b.HasOne("ScanlationTracker.Infrastructure.Database.Entities.UserEntity", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

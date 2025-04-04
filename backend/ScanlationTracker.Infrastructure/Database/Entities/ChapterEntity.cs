@@ -1,6 +1,10 @@
-﻿namespace ScanlationTracker.Infrastructure.Database.Entities;
+﻿using Microsoft.EntityFrameworkCore;
 
-public class Chapter
+namespace ScanlationTracker.Infrastructure.Database.Entities;
+
+[Index(nameof(SeriesId), nameof(ExternalId), IsUnique = true)]
+[Index(nameof(SeriesId), nameof(Number), IsUnique = true)]
+public class ChapterEntity
 {
     public required Guid Id { get; init; }
 
@@ -14,5 +18,5 @@ public class Chapter
 
     public required DateTimeOffset AddedAt { get; init; }
 
-    public Series? Series { get; init; }
+    public SeriesEntity? Series { get; init; }
 }

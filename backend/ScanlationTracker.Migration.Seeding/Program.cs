@@ -29,7 +29,7 @@ async Task SeedUsersAsync()
     {
         if (!existingUsernames.Contains(requiredUsername))
         {
-            dbContext.Users.Add(new User { Id = Guid.CreateVersion7(), Username = requiredUsername });
+            dbContext.Users.Add(new UserEntity { Id = Guid.CreateVersion7(), Username = requiredUsername });
         }
     }
 
@@ -42,21 +42,21 @@ async Task SeedScanlationGroupsAsync()
     {
         new
         {
-            Name = ScanlationGroupNames.AsuraScans,
+            Name = GroupNameConstants.AsuraScans,
             PublicName = "Asura Scans",
             BaseWebsiteUrl = "https://asuracomic.net/",
             BaseCoverUrl = "https://gg.asuracomic.net/",
         },
         new
         {
-            Name = ScanlationGroupNames.RizzFables,
+            Name = GroupNameConstants.RizzFables,
             PublicName = "Rizz Fables",
             BaseWebsiteUrl = "https://rizzfables.com/",
             BaseCoverUrl = "https://rizzfables.com/",
         },
         new
         {
-            Name = ScanlationGroupNames.ReaperScans,
+            Name = GroupNameConstants.ReaperScans,
             PublicName = "Reaper Scans",
             BaseWebsiteUrl = "https://reaperscans.com/",
             BaseCoverUrl = "https://reaperscans.com/",
@@ -75,7 +75,7 @@ async Task SeedScanlationGroupsAsync()
         }
         else
         {
-            dbContext.Add(new ScanlationGroup
+            dbContext.Add(new ScanlationGroupEntity
             {
                 Id = Guid.CreateVersion7(),
                 Name = requiredGroup.Name,

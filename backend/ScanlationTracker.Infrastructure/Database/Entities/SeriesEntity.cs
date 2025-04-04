@@ -1,6 +1,9 @@
-﻿namespace ScanlationTracker.Infrastructure.Database.Entities;
+﻿using Microsoft.EntityFrameworkCore;
 
-public class Series
+namespace ScanlationTracker.Infrastructure.Database.Entities;
+
+[Index(nameof(ScanlationGroupId), nameof(ExternalId), IsUnique = true)]
+public class SeriesEntity
 {
     public required Guid Id { get; init; }
 
@@ -12,5 +15,5 @@ public class Series
 
     public required string RelativeCoverUrl { get; init; }
 
-    public ScanlationGroup? ScanlationGroup { get; init; }
+    public ScanlationGroupEntity? ScanlationGroup { get; init; }
 }

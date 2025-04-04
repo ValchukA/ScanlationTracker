@@ -113,6 +113,12 @@ namespace ScanlationTracker.Infrastructure.Database.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Chapters_SeriesId_Number",
+                table: "Chapters",
+                columns: new[] { "SeriesId", "Number" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ScanlationGroups_Name",
                 table: "ScanlationGroups",
                 column: "Name",
