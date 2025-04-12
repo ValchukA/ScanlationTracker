@@ -11,5 +11,5 @@ internal class SeriesEfRepository : ISeriesRepository
     public SeriesEfRepository(ScanlationDbContext dbContext) => _dbContext = dbContext;
 
     public async Task<ScanlationGroupDto[]> GetAllGroupsAsync()
-        => await _dbContext.ScanlationGroups.Select(group => group.ToDto()).ToArrayAsync();
+        => await _dbContext.ScanlationGroups.Select(group => group.ToDto()).AsNoTracking().ToArrayAsync();
 }
