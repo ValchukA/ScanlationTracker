@@ -2,8 +2,10 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ScanlationTracker.Core.Repositories;
+using ScanlationTracker.Core.Scrapers;
 using ScanlationTracker.Infrastructure.Database;
 using ScanlationTracker.Infrastructure.Database.Repositories;
+using ScanlationTracker.Infrastructure.Scrapers;
 using System.ComponentModel.DataAnnotations;
 
 namespace ScanlationTracker.Infrastructure;
@@ -14,6 +16,7 @@ public static class DiExtensions
     {
         services.AddPostgreSql(configuration);
         services.AddScoped<ISeriesRepository, SeriesEfRepository>();
+        services.AddSingleton<IScanlationScraperFactory, ScanlationScraperFactory>();
     }
 
     public static void AddPostgreSql(this IServiceCollection services, IConfiguration configuration)
