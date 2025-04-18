@@ -63,6 +63,8 @@ internal class AsuraScansAsScraper : IScanlationScraper
 
     public async Task<ScrapedSeries> ScrapeSeriesAsync(string seriesUrl)
     {
+        _logger.LogInformation("Scraping series at {SeriesUrl}", seriesUrl);
+
         var document = await _browsingContext.OpenAsync(seriesUrl);
 
         var coverUrl = ((IHtmlImageElement)document
