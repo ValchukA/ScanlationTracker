@@ -16,6 +16,7 @@ public static class DiExtensions
     {
         services.AddPostgreSql(configuration);
         services.AddScoped<ISeriesRepository, SeriesEfRepository>();
+        services.AddHttpClient();
         services.AddSingleton<IScanlationScraperFactory, ScanlationScraperFactory>();
     }
 

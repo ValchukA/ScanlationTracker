@@ -1,6 +1,7 @@
 ﻿using AngleSharp;
 using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
+using AngleSharp.Io.Network;
 using Microsoft.Extensions.Logging;
 using ScanlationTracker.Core.Scrapers;
 using ScanlationTracker.Core.Scrapers.Dtos;
@@ -16,9 +17,12 @@ internal class AsuraScansAsScraper : IScanlationScraper
     private readonly string _latestUpdatesUrl;
     private readonly ILogger<AsuraScansAsScraper> _logger;
 
-    public AsuraScansAsScraper(AsuraScansUrlHelper urlHelper, ILogger<AsuraScansAsScraper> logger)
+    public AsuraScansAsScraper(HttpClient httpClient, AsuraScansUrlHelper urlHelper, ILogger<AsuraScansAsScraper> logger)
     {
-        _browsingContext = BrowsingContext.New(Configuration.Default.WithDefaultLoader());
+        var angleSharpConfig = Configuration.Default
+            .WithRequester(new HttpClientRequester(httpClient)).WithDefaultLoader();
+
+        _browsingContext = BrowsingContext.New(angleSharpConfig);
         _latestUpdatesUrl = urlHelper.LatestUpdatesUrl;
         _logger = logger;
     }
