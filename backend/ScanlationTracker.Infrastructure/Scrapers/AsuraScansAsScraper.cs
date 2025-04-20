@@ -1,7 +1,6 @@
 ﻿using AngleSharp;
 using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
-using AngleSharp.Io.Network;
 using Microsoft.Extensions.Logging;
 using ScanlationTracker.Core.Scrapers;
 using ScanlationTracker.Core.Scrapers.Dtos;
@@ -9,70 +8,20 @@ using ScanlationTracker.Infrastructure.UrlHelpers;
 
 namespace ScanlationTracker.Infrastructure.Scrapers;
 
-internal class AsuraScansAsScraper : IScanlationScraper
+internal class AsuraScansAsScraper : PaginatedAsScraper, IScanlationScraper
 {
     private const StringComparison _stringComparison = StringComparison.OrdinalIgnoreCase;
 
-    private readonly IBrowsingContext _browsingContext;
-    private readonly string _latestUpdatesUrl;
-    private readonly ILogger<AsuraScansAsScraper> _logger;
-
     public AsuraScansAsScraper(HttpClient httpClient, AsuraScansUrlHelper urlHelper, ILogger<AsuraScansAsScraper> logger)
+        : base(httpClient, urlHelper.LatestUpdatesUrl, logger)
     {
-        var angleSharpConfig = Configuration.Default
-            .WithRequester(new HttpClientRequester(httpClient)).WithDefaultLoader();
-
-        _browsingContext = BrowsingContext.New(angleSharpConfig);
-        _latestUpdatesUrl = urlHelper.LatestUpdatesUrl;
-        _logger = logger;
-    }
-
-    public async IAsyncEnumerable<ScrapedSeriesUpdate> ScrapeLatestUpdatesAsync()
-    {
-        var scrapedSeriesUrls = new HashSet<string>();
-        var pageUrl = _latestUpdatesUrl;
-
-        while (true)
-        {
-            _logger.LogInformation("Scraping series updates at {PageUrl}", pageUrl);
-
-            var document = await _browsingContext.OpenAsync(pageUrl);
-
-            foreach (var seriesUpdate in ScrapeSeriesUpdates(document))
-            {
-                if (scrapedSeriesUrls.Add(seriesUpdate.SeriesUrl))
-                {
-                    yield return seriesUpdate;
-
-                    continue;
-                }
-
-                _logger.LogInformation("Pages shifted between iterations");
-            }
-
-            pageUrl = ScrapeNextPageUrl(document);
-
-            if (pageUrl is null)
-            {
-                _logger.LogInformation("There are no remaining pages to scrape");
-
-                yield break;
-            }
-        }
     }
 
     public async Task<ScrapedSeries> ScrapeSeriesAsync(string seriesUrl)
     {
-        _logger.LogInformation("Scraping series at {SeriesUrl}", seriesUrl);
+        Logger.LogInformation("Scraping series at {SeriesUrl}", seriesUrl);
 
-        var document = await _browsingContext.OpenAsync(seriesUrl);
-
-        var coverUrl = ((IHtmlImageElement)document
-            .All
-            .First(element => element.TextContent.Equals("Bookmark", _stringComparison))
-            .ParentElement!
-            .PreviousElementSibling!)
-            .Source!;
+        var document = await BrowsingContext.OpenAsync(seriesUrl);
 
         var title = document
             .All
@@ -80,6 +29,13 @@ internal class AsuraScansAsScraper : IScanlationScraper
             .ParentElement!
             .FirstElementChild!
             .TextContent;
+
+        var coverUrl = ((IHtmlImageElement)document
+            .All
+            .First(element => element.TextContent.Equals("Bookmark", _stringComparison))
+            .ParentElement!
+            .PreviousElementSibling!)
+            .Source!;
 
         var chaptersAnchors = document
             .All
@@ -105,7 +61,7 @@ internal class AsuraScansAsScraper : IScanlationScraper
         };
     }
 
-    private static IEnumerable<ScrapedSeriesUpdate> ScrapeSeriesUpdates(IDocument document)
+    protected override IEnumerable<ScrapedSeriesUpdate> ScrapeSeriesUpdates(IDocument document)
     {
         var updatesSection = document
             .All
@@ -125,7 +81,7 @@ internal class AsuraScansAsScraper : IScanlationScraper
         }
     }
 
-    private static string? ScrapeNextPageUrl(IDocument document)
+    protected override string? ScrapeNextPageUrl(IDocument document)
     {
         var nextPageAnchor = (IHtmlAnchorElement)document
             .Links

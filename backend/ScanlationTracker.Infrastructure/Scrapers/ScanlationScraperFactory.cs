@@ -20,7 +20,7 @@ internal class ScanlationScraperFactory : IScanlationScraperFactory
         => groupName switch
         {
             ScanlationGroupName.AsuraScans => CreateAsuraScansScraper(baseWebsiteUrl),
-            ScanlationGroupName.RizzFables => new RizzFablesAsScraper(),
+            ScanlationGroupName.RizzFables => CreateRizzFablesScraper(baseWebsiteUrl),
             ScanlationGroupName.ReaperScans => new ReaperScansAsScraper(),
             _ => throw new ArgumentException("Unexpected value"),
         };
@@ -32,5 +32,14 @@ internal class ScanlationScraperFactory : IScanlationScraperFactory
         var logger = _loggerFactory.CreateLogger<AsuraScansAsScraper>();
 
         return new AsuraScansAsScraper(httpClient, urlHelper, logger);
+    }
+
+    private RizzFablesAsScraper CreateRizzFablesScraper(string baseWebsiteUrl)
+    {
+        var httpClient = _httpClientFactory.CreateClient();
+        var urlHelper = new RizzFablesUrlHelper(baseWebsiteUrl);
+        var logger = _loggerFactory.CreateLogger<RizzFablesAsScraper>();
+
+        return new RizzFablesAsScraper(httpClient, urlHelper, logger);
     }
 }

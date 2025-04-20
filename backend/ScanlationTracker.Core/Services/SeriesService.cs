@@ -31,10 +31,16 @@ internal class SeriesService : ISeriesService
             await foreach (var seriesUpdate in scraper.ScrapeLatestUpdatesAsync())
             {
                 var series = await scraper.ScrapeSeriesAsync(seriesUpdate.SeriesUrl);
+                var normalizedSeriesTitle = NormalizeWhitespaces(series.Title);
 
                 foreach (var chapter in series.LatestChapters)
                 {
-                    _logger.LogInformation("{Title}", NormalizeWhitespaces(chapter.Title));
+                    _logger.LogInformation(
+                        "{SeriesTitle} - {CoverUrl} - {ChapterUrl} - {ChapterTitle}",
+                        normalizedSeriesTitle,
+                        series.CoverUrl,
+                        chapter.Url,
+                        NormalizeWhitespaces(chapter.Title));
                 }
             }
         }
