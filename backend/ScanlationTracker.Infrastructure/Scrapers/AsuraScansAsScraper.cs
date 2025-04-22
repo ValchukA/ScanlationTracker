@@ -12,8 +12,11 @@ internal class AsuraScansAsScraper : PaginatedAsScraper, IScanlationScraper
 {
     private const StringComparison _stringComparison = StringComparison.OrdinalIgnoreCase;
 
-    public AsuraScansAsScraper(HttpClient httpClient, AsuraScansUrlHelper urlHelper, ILogger<AsuraScansAsScraper> logger)
-        : base(httpClient, urlHelper.LatestUpdatesUrl, logger)
+    public AsuraScansAsScraper(
+        IHttpClientFactory httpClientFactory,
+        AsuraScansUrlHelper urlHelper,
+        ILogger<AsuraScansAsScraper> logger)
+        : base(httpClientFactory, urlHelper.LatestUpdatesUrl, logger)
     {
     }
 

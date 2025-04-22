@@ -12,9 +12,12 @@ internal class RizzFablesAsScraper : PaginatedAsScraper, IScanlationScraper
 {
     private const StringComparison _stringComparison = StringComparison.OrdinalIgnoreCase;
 
-    public RizzFablesAsScraper(HttpClient httpClient, RizzFablesUrlHelper urlHelper, ILogger<RizzFablesAsScraper> logger)
-        : base(httpClient, urlHelper.LatestUpdatesUrl, logger)
-        => httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Chrome");
+    public RizzFablesAsScraper(
+        IHttpClientFactory httpClientFactory,
+        RizzFablesUrlHelper urlHelper,
+        ILogger<RizzFablesAsScraper> logger)
+        : base(httpClientFactory, urlHelper.LatestUpdatesUrl, logger)
+        => HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Chrome");
 
     public async Task<ScrapedSeries> ScrapeSeriesAsync(string seriesUrl)
     {

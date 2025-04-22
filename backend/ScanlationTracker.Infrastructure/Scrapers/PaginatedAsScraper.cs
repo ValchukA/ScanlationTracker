@@ -11,16 +11,18 @@ internal abstract class PaginatedAsScraper
 {
     private readonly string _latestUpdatesUrl;
 
-    protected PaginatedAsScraper(HttpClient httpClient, string latestUpdatesUrl, ILogger logger)
+    protected PaginatedAsScraper(IHttpClientFactory httpClientFactory, string latestUpdatesUrl, ILogger logger)
     {
-        var angleSharpConfig = Configuration.Default
-            .WithRequester(new HttpClientRequester(httpClient)).WithDefaultLoader();
-
-        BrowsingContext = AsBrowsingContext.New(angleSharpConfig);
+        _latestUpdatesUrl = latestUpdatesUrl;
         Logger = logger;
 
-        _latestUpdatesUrl = latestUpdatesUrl;
+        HttpClient = httpClientFactory.CreateClient(latestUpdatesUrl);
+        var angleSharpConfig = Configuration.Default
+            .WithRequester(new HttpClientRequester(HttpClient)).WithDefaultLoader();
+        BrowsingContext = AsBrowsingContext.New(angleSharpConfig);
     }
+
+    protected HttpClient HttpClient { get; }
 
     protected IBrowsingContext BrowsingContext { get; }
 

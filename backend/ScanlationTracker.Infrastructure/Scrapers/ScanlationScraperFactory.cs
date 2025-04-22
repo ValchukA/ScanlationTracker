@@ -27,19 +27,17 @@ internal class ScanlationScraperFactory : IScanlationScraperFactory
 
     private AsuraScansAsScraper CreateAsuraScansScraper(string baseWebsiteUrl)
     {
-        var httpClient = _httpClientFactory.CreateClient();
         var urlHelper = new AsuraScansUrlHelper(baseWebsiteUrl);
         var logger = _loggerFactory.CreateLogger<AsuraScansAsScraper>();
 
-        return new AsuraScansAsScraper(httpClient, urlHelper, logger);
+        return new AsuraScansAsScraper(_httpClientFactory, urlHelper, logger);
     }
 
     private RizzFablesAsScraper CreateRizzFablesScraper(string baseWebsiteUrl)
     {
-        var httpClient = _httpClientFactory.CreateClient();
         var urlHelper = new RizzFablesUrlHelper(baseWebsiteUrl);
         var logger = _loggerFactory.CreateLogger<RizzFablesAsScraper>();
 
-        return new RizzFablesAsScraper(httpClient, urlHelper, logger);
+        return new RizzFablesAsScraper(_httpClientFactory, urlHelper, logger);
     }
 }
