@@ -10,7 +10,13 @@ RUN dotnet restore ScanlationTracker.Migration.Seeding/ScanlationTracker.Migrati
 COPY backend/ScanlationTracker.Migration.Seeding ScanlationTracker.Migration.Seeding
 COPY backend/ScanlationTracker.Core ScanlationTracker.Core
 COPY backend/ScanlationTracker.Infrastructure ScanlationTracker.Infrastructure
-RUN dotnet publish ScanlationTracker.Migration.Seeding --no-restore -c release -o /app /p:UseAppHost=false
+RUN dotnet publish ScanlationTracker.Migration.Seeding \
+    --no-restore \
+    -c release \
+    -o /app \
+    /p:UseAppHost=false \
+    /p:RunAnalyzers=false \
+    /p:GenerateDocumentationFile=false
 
 FROM mcr.microsoft.com/dotnet/runtime:9.0
 WORKDIR /app

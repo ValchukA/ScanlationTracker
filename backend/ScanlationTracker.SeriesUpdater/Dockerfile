@@ -10,7 +10,13 @@ RUN dotnet restore ScanlationTracker.SeriesUpdater/ScanlationTracker.SeriesUpdat
 COPY backend/ScanlationTracker.SeriesUpdater ScanlationTracker.SeriesUpdater
 COPY backend/ScanlationTracker.Core ScanlationTracker.Core
 COPY backend/ScanlationTracker.Infrastructure ScanlationTracker.Infrastructure
-RUN dotnet publish ScanlationTracker.SeriesUpdater --no-restore -c release -o /app /p:UseAppHost=false
+RUN dotnet publish ScanlationTracker.SeriesUpdater \
+    --no-restore \
+    -c release \
+    -o /app \
+    /p:UseAppHost=false \
+    /p:RunAnalyzers=false \
+    /p:GenerateDocumentationFile=false
 
 FROM mcr.microsoft.com/dotnet/runtime:9.0
 WORKDIR /app

@@ -6,7 +6,13 @@ COPY backend/ScanlationTracker.Api/ScanlationTracker.Api.csproj ScanlationTracke
 RUN dotnet restore ScanlationTracker.Api/ScanlationTracker.Api.csproj
 
 COPY backend/ScanlationTracker.Api ScanlationTracker.Api
-RUN dotnet publish ScanlationTracker.Api --no-restore -c release -o /app /p:UseAppHost=false
+RUN dotnet publish ScanlationTracker.Api \
+    --no-restore \
+    -c release \
+    -o /app \
+    /p:UseAppHost=false \
+    /p:RunAnalyzers=false \
+    /p:GenerateDocumentationFile=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app
