@@ -4,7 +4,7 @@ using AngleSharp.Html.Dom;
 using Microsoft.Extensions.Logging;
 using ScanlationTracker.Core.Scrapers;
 using ScanlationTracker.Core.Scrapers.Dtos;
-using ScanlationTracker.Infrastructure.UrlHelpers;
+using ScanlationTracker.Infrastructure.UrlManagers;
 
 namespace ScanlationTracker.Infrastructure.Scrapers;
 
@@ -14,9 +14,9 @@ internal class AsuraScansAsScraper : PaginatedAsScraper, IScanlationScraper
 
     public AsuraScansAsScraper(
         IHttpClientFactory httpClientFactory,
-        AsuraScansUrlHelper urlHelper,
+        AsuraScansUrlManager urlManager,
         ILogger<AsuraScansAsScraper> logger)
-        : base(httpClientFactory, urlHelper.LatestUpdatesUrl, logger)
+        : base(httpClientFactory, urlManager.LatestUpdatesUrl, logger)
     {
     }
 

@@ -4,7 +4,7 @@ using AngleSharp.Html.Dom;
 using Microsoft.Extensions.Logging;
 using ScanlationTracker.Core.Scrapers;
 using ScanlationTracker.Core.Scrapers.Dtos;
-using ScanlationTracker.Infrastructure.UrlHelpers;
+using ScanlationTracker.Infrastructure.UrlManagers;
 
 namespace ScanlationTracker.Infrastructure.Scrapers;
 
@@ -14,9 +14,9 @@ internal class RizzFablesAsScraper : PaginatedAsScraper, IScanlationScraper
 
     public RizzFablesAsScraper(
         IHttpClientFactory httpClientFactory,
-        RizzFablesUrlHelper urlHelper,
+        RizzFablesUrlManager urlManager,
         ILogger<RizzFablesAsScraper> logger)
-        : base(httpClientFactory, urlHelper.LatestUpdatesUrl, logger)
+        : base(httpClientFactory, urlManager.LatestUpdatesUrl, logger)
         => HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Chrome");
 
     public async Task<ScrapedSeries> ScrapeSeriesAsync(string seriesUrl)
