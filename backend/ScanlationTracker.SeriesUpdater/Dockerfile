@@ -1,3 +1,5 @@
+FROM mcr.microsoft.com/dotnet/runtime:9.0 AS base
+
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
@@ -18,7 +20,7 @@ RUN dotnet publish ScanlationTracker.SeriesUpdater \
     /p:RunAnalyzers=false \
     /p:GenerateDocumentationFile=false
 
-FROM mcr.microsoft.com/dotnet/runtime:9.0
+FROM base AS final
 WORKDIR /app
 COPY --from=build /app .
 
