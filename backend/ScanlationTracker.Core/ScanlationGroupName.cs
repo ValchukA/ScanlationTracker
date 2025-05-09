@@ -4,5 +4,4 @@ public enum ScanlationGroupName
 {
     AsuraScans,
     RizzFables,
-    ReaperScans,
 }

@@ -21,7 +21,6 @@ internal class ScanlationScraperFactory : IScanlationScraperFactory
         {
             ScanlationGroupName.AsuraScans => CreateAsuraScansScraper(baseWebsiteUrl),
             ScanlationGroupName.RizzFables => CreateRizzFablesScraper(baseWebsiteUrl),
-            ScanlationGroupName.ReaperScans => new ReaperScansAsScraper(),
             _ => throw new ArgumentException("Unexpected value"),
         };
 

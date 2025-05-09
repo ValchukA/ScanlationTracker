@@ -54,13 +54,6 @@ async Task SeedScanlationGroupsAsync()
             BaseWebsiteUrl = "https://rizzfables.com/",
             BaseCoverUrl = "https://rizzfables.com/",
         },
-        new
-        {
-            Name = GroupNameConstants.ReaperScans,
-            PublicName = "Reaper Scans",
-            BaseWebsiteUrl = "https://reaperscans.com/",
-            BaseCoverUrl = "https://reaperscans.com/",
-        },
     };
 
     var existingGroups = await dbContext.ScanlationGroups.ToDictionaryAsync(group => group.Name);

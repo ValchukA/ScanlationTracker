@@ -12,7 +12,6 @@ internal static class MappingExtensions
         {
             GroupNameConstants.AsuraScans => ScanlationGroupName.AsuraScans,
             GroupNameConstants.RizzFables => ScanlationGroupName.RizzFables,
-            GroupNameConstants.ReaperScans => ScanlationGroupName.ReaperScans,
             _ => throw new ArgumentException("Unexpected value"),
         };
 
