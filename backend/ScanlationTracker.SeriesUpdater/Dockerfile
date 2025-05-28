@@ -1,7 +1,8 @@
-FROM mcr.microsoft.com/dotnet/runtime:9.0 AS base
-
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
+
+ADD https://github.com/uBlockOrigin/uBOL-home/releases/download/uBOLite_2025.518.1611/uBOLite_2025.518.1611.chromium.mv3.zip /uBOLite.zip
+RUN apt update && apt install unzip && unzip /uBOLite.zip -d /uBOLite
 
 COPY backend/Directory.Build.props .
 COPY backend/ScanlationTracker.SeriesUpdater/ScanlationTracker.SeriesUpdater.csproj ScanlationTracker.SeriesUpdater/
@@ -20,8 +21,20 @@ RUN dotnet publish ScanlationTracker.SeriesUpdater \
     /p:RunAnalyzers=false \
     /p:GenerateDocumentationFile=false
 
-FROM base AS final
+FROM mcr.microsoft.com/dotnet/runtime:9.0 AS final
 WORKDIR /app
+
+ENV Playwright__BrowserStoragePath=/browser
+ENV Playwright__AdBlockExtensionPath=/browser/uBOLite
+COPY --from=build /uBOLite $Playwright__AdBlockExtensionPath
+
+COPY --from=build /app/playwright.ps1 .
+COPY --from=build /app/Microsoft.Playwright.dll .
+COPY --from=build /app/.playwright .playwright/
+RUN --mount=type=bind,from=build,source=/usr/share/powershell,target=/powershell \
+    /powershell/pwsh playwright.ps1 install chromium --with-deps --no-shell \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=build /app .
 
 ENTRYPOINT ["dotnet", "ScanlationTracker.SeriesUpdater.dll"]

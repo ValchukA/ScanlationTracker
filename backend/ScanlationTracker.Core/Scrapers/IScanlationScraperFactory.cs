@@ -2,5 +2,5 @@
 
 public interface IScanlationScraperFactory
 {
-    public IScanlationScraper CreateScraper(ScanlationGroupName groupName, string baseWebsiteUrl);
+    public IScanlationScraper CreateScraper(ScanlationGroupName groupName, string latestUpdatesUrl);
 }

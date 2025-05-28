@@ -29,7 +29,11 @@ async Task SeedUsersAsync()
     {
         if (!existingUsernames.Contains(requiredUsername))
         {
-            dbContext.Users.Add(new UserEntity { Id = Guid.CreateVersion7(), Username = requiredUsername });
+            dbContext.Users.Add(new UserEntity
+            {
+                Id = Guid.CreateVersion7(),
+                Username = requiredUsername,
+            });
         }
     }
 

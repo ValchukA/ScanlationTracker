@@ -6,5 +6,5 @@ public interface IScanlationScraper
 {
     public IAsyncEnumerable<ScrapedSeriesUpdate> ScrapeLatestUpdatesAsync();
 
-    public Task<ScrapedSeries> ScrapeSeriesAsync(string seriesUrl);
+    public Task<IScrapedSeries> ScrapeSeriesAsync(string seriesUrl);
 }

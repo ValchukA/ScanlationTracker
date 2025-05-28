@@ -1,6 +1,8 @@
-﻿namespace ScanlationTracker.Infrastructure.UrlManagers;
+﻿using ScanlationTracker.Core.UrlManagers;
 
-internal class AsuraScansUrlManager
+namespace ScanlationTracker.Infrastructure.UrlManagers;
+
+internal class AsuraScansUrlManager : IUrlManager
 {
     public AsuraScansUrlManager(string baseWebsiteUrl) => LatestUpdatesUrl = baseWebsiteUrl;
 

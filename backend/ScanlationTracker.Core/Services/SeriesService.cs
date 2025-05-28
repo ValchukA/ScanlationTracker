@@ -1,21 +1,25 @@
 ﻿using Microsoft.Extensions.Logging;
 using ScanlationTracker.Core.Repositories;
 using ScanlationTracker.Core.Scrapers;
+using ScanlationTracker.Core.UrlManagers;
 
 namespace ScanlationTracker.Core.Services;
 
 internal class SeriesService : ISeriesService
 {
     private readonly ISeriesRepository _seriesRepository;
+    private readonly IUrlManagerFactory _urlManagerFactory;
     private readonly IScanlationScraperFactory _scraperFactory;
     private readonly ILogger<SeriesService> _logger;
 
     public SeriesService(
         ISeriesRepository seriesRepository,
+        IUrlManagerFactory urlManagerFactory,
         IScanlationScraperFactory scraperFactory,
         ILogger<SeriesService> logger)
     {
         _seriesRepository = seriesRepository;
+        _urlManagerFactory = urlManagerFactory;
         _scraperFactory = scraperFactory;
         _logger = logger;
     }
@@ -24,26 +28,34 @@ internal class SeriesService : ISeriesService
     {
         var groups = await _seriesRepository.GetAllGroupsAsync();
 
-        foreach (var group in groups)
+        await Parallel.ForEachAsync(groups, async (group, _) =>
         {
-            var scraper = _scraperFactory.CreateScraper(group.Name, group.BaseWebsiteUrl);
-
-            await foreach (var seriesUpdate in scraper.ScrapeLatestUpdatesAsync())
+            try
             {
-                var series = await scraper.ScrapeSeriesAsync(seriesUpdate.SeriesUrl);
-                var normalizedSeriesTitle = NormalizeWhitespaces(series.Title);
+                var urlManager = _urlManagerFactory.CreateUrlManager(group.Name, group.BaseWebsiteUrl);
+                var scraper = _scraperFactory.CreateScraper(group.Name, urlManager.LatestUpdatesUrl);
 
-                foreach (var chapter in series.LatestChapters)
+                await foreach (var seriesUpdate in scraper.ScrapeLatestUpdatesAsync())
                 {
-                    _logger.LogInformation(
-                        "{SeriesTitle} - {CoverUrl} - {ChapterUrl} - {ChapterTitle}",
-                        normalizedSeriesTitle,
-                        series.CoverUrl,
-                        chapter.Url,
-                        NormalizeWhitespaces(chapter.Title));
+                    await using var series = await scraper.ScrapeSeriesAsync(seriesUpdate.SeriesUrl);
+                    var normalizedSeriesTitle = NormalizeWhitespaces(series.Title);
+
+                    await foreach (var chapter in series.LatestChaptersAsync)
+                    {
+                        _logger.LogInformation(
+                            "{SeriesTitle} - {CoverUrl} - {ChapterUrl} - {ChapterTitle}",
+                            normalizedSeriesTitle,
+                            series.CoverUrl,
+                            chapter.Url,
+                            NormalizeWhitespaces(chapter.Title));
+                    }
                 }
             }
-        }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception, "Failed to update series from {GroupName}", group.Name);
+            }
+        });
 
         static string NormalizeWhitespaces(string str)
             => string.Join(' ', str.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));

@@ -1,6 +1,8 @@
-﻿namespace ScanlationTracker.Infrastructure.UrlManagers;
+﻿using ScanlationTracker.Core.UrlManagers;
 
-internal class RizzFablesUrlManager
+namespace ScanlationTracker.Infrastructure.UrlManagers;
+
+internal class RizzFablesUrlManager : IUrlManager
 {
     public RizzFablesUrlManager(string baseWebsiteUrl) => LatestUpdatesUrl = baseWebsiteUrl;
 

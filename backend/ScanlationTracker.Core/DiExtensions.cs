@@ -5,5 +5,6 @@ namespace ScanlationTracker.Core;
 
 public static class DiExtensions
 {
-    public static void AddCore(this IServiceCollection services) => services.AddScoped<ISeriesService, SeriesService>();
+    public static void AddCore(this IServiceCollection services)
+        => services.AddScoped<ISeriesService, SeriesService>();
 }
