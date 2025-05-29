@@ -33,20 +33,12 @@ internal class PwBrowserContextHolder : IPwBrowserContextHolder
                     {
                         Channel = "chromium",
                         UserAgent = playwright.Devices["Desktop Chrome"].UserAgent,
-                        Args = [$"--disable-extensions-except={_settings.AdBlockExtensionPath}"],
+                        Args =
+                        [
+                            $"--disable-extensions-except={_settings.AdBlockExtensionPath}",
+                            "--blink-settings=imagesEnabled=false",
+                        ],
                     });
-
-                await _context.RouteAsync("**/*", async route =>
-                {
-                    if (route.Request.ResourceType == "image")
-                    {
-                        await route.AbortAsync();
-
-                        return;
-                    }
-
-                    await route.ContinueAsync();
-                });
             }
         }
         finally
