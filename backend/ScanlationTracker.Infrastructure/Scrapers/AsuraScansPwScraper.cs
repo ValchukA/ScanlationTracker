@@ -88,7 +88,7 @@ internal class AsuraScansPwScraper : IScanlationScraper
     private static async IAsyncEnumerable<ScrapedChapter> ScrapeChaptersAsync(IPage page)
     {
         var chapterLocators = await page
-            .Locator("div:has(> [placeholder^='Search Chapter' i]) + div a").AllAsync();
+            .Locator("div:has(> [placeholder^='Search Chapter' i]) + div > div > a").AllAsync();
 
         foreach (var chapterLocator in chapterLocators)
         {
