@@ -19,7 +19,8 @@ RUN dotnet publish ScanlationTracker.SeriesUpdater \
     -o /app \
     /p:UseAppHost=false \
     /p:RunAnalyzers=false \
-    /p:GenerateDocumentationFile=false
+    /p:GenerateDocumentationFile=false \
+    && chown -R $APP_UID /app/.playwright
 
 FROM mcr.microsoft.com/dotnet/runtime:9.0 AS final
 WORKDIR /app
@@ -27,7 +28,7 @@ WORKDIR /app
 ARG BrowserPath=/browser
 ENV Playwright__BrowserStoragePath=$BrowserPath/storage
 ENV Playwright__AdBlockExtensionPath=$BrowserPath/uBOLite
-COPY --from=build /uBOLite $Playwright__AdBlockExtensionPath
+COPY --from=build --chown=$APP_UID /uBOLite $Playwright__AdBlockExtensionPath
 
 COPY --from=build /app/playwright.ps1 .
 COPY --from=build /app/Microsoft.Playwright.dll .
@@ -39,7 +40,6 @@ RUN --mount=type=bind,from=build,source=/usr/share/powershell,target=/powershell
 
 COPY --from=build /app .
 
-RUN chown -R $APP_UID $BrowserPath /app/.playwright
 USER $APP_UID
 
 ENTRYPOINT ["dotnet", "ScanlationTracker.SeriesUpdater.dll"]
