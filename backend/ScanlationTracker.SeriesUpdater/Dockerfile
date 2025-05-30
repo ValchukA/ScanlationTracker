@@ -24,17 +24,22 @@ RUN dotnet publish ScanlationTracker.SeriesUpdater \
 FROM mcr.microsoft.com/dotnet/runtime:9.0 AS final
 WORKDIR /app
 
-ENV Playwright__BrowserStoragePath=/browser
-ENV Playwright__AdBlockExtensionPath=/browser/uBOLite
+ARG BrowserPath=/browser
+ENV Playwright__BrowserStoragePath=$BrowserPath/storage
+ENV Playwright__AdBlockExtensionPath=$BrowserPath/uBOLite
 COPY --from=build /uBOLite $Playwright__AdBlockExtensionPath
 
 COPY --from=build /app/playwright.ps1 .
 COPY --from=build /app/Microsoft.Playwright.dll .
 COPY --from=build /app/.playwright .playwright/
+ENV PLAYWRIGHT_BROWSERS_PATH=$BrowserPath/ms-playwright
 RUN --mount=type=bind,from=build,source=/usr/share/powershell,target=/powershell \
     /powershell/pwsh playwright.ps1 install chromium --with-deps --no-shell \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /app .
+
+RUN chown -R $APP_UID $BrowserPath /app/.playwright
+USER $APP_UID
 
 ENTRYPOINT ["dotnet", "ScanlationTracker.SeriesUpdater.dll"]

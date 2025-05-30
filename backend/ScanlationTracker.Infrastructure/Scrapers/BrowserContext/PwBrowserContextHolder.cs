@@ -32,6 +32,7 @@ internal class PwBrowserContextHolder : IPwBrowserContextHolder
                     new()
                     {
                         Channel = "chromium",
+                        ChromiumSandbox = true,
                         UserAgent = playwright.Devices["Desktop Chrome"].UserAgent,
                         Args =
                         [
