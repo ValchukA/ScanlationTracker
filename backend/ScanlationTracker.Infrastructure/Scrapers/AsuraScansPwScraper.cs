@@ -55,6 +55,7 @@ internal class AsuraScansPwScraper : IScanlationScraper
                 }
 
                 await nextButtonLocator.ClickAsync();
+                await page.WaitForLoadStateAsync();
             }
         }
         finally

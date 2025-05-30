@@ -59,6 +59,7 @@ internal class RizzFablesPwScraper : IScanlationScraper
 
                 await context.ClearCookiesAsync(new() { Domain = _domain });
                 await nextButtonLocator.ClickAsync();
+                await page.WaitForLoadStateAsync();
             }
         }
         finally
