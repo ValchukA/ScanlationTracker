@@ -2,5 +2,5 @@
 
 public interface IUrlManagerFactory
 {
-    public IUrlManager CreateUrlManager(ScanlationGroupName groupName, string baseWebsiteUrl);
+    public IUrlManager CreateUrlManager(ScanlationGroupName groupName, string baseWebsiteUrl, string baseCoverUrl);
 }

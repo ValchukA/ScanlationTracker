@@ -32,20 +32,30 @@ internal class SeriesService : ISeriesService
         {
             try
             {
-                var urlManager = _urlManagerFactory.CreateUrlManager(group.Name, group.BaseWebsiteUrl);
+                var urlManager = _urlManagerFactory.CreateUrlManager(
+                    group.Name,
+                    group.BaseWebsiteUrl,
+                    group.BaseCoverUrl);
                 var scraper = _scraperFactory.CreateScraper(group.Name, urlManager.LatestUpdatesUrl);
 
                 await foreach (var seriesUpdate in scraper.ScrapeLatestUpdatesAsync())
                 {
+                    var seriesId = urlManager.ExtractSeriesId(seriesUpdate.SeriesUrl);
                     await using var series = await scraper.ScrapeSeriesAsync(seriesUpdate.SeriesUrl);
                     var normalizedSeriesTitle = NormalizeWhitespaces(series.Title);
+                    var relativeCoverUrl = urlManager.ExtractRelativeCoverUrl(series.CoverUrl);
 
                     await foreach (var chapter in series.LatestChaptersAsync)
                     {
                         _logger.LogInformation(
-                            "{SeriesTitle} - {CoverUrl} - {ChapterUrl} - {ChapterTitle}",
+                            "{SeriesId} - {SeriesUrl} - {SeriesTitle} - {CoverUrl} - {RelativeCoverUrl} - " +
+                            "{ChapterId} - {ChapterUrl} - {ChapterTitle}",
+                            seriesId,
+                            seriesUpdate.SeriesUrl,
                             normalizedSeriesTitle,
                             series.CoverUrl,
+                            relativeCoverUrl,
+                            urlManager.ExtractChapterId(chapter.Url),
                             chapter.Url,
                             NormalizeWhitespaces(chapter.Title));
                     }
