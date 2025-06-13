@@ -33,6 +33,7 @@ public static class DiExtensions
             .GetRequiredSection(PostgreSqlSettings.SectionKey).Get<PostgreSqlSettings>()!;
         Validator.ValidateObject(settings, new ValidationContext(settings));
 
-        services.AddDbContext<ScanlationDbContext>(options => options.UseNpgsql(settings.ConnectionString));
+        services.AddDbContext<ScanlationDbContext>(options =>
+            options.UseNpgsql(settings.ConnectionString));
     }
 }

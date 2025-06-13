@@ -1,21 +1,20 @@
 using Microsoft.Extensions.Options;
 using ScanlationTracker.Core.Services;
-using System.Diagnostics;
 
 namespace ScanlationTracker.SeriesUpdater;
 
 internal class SeriesUpdaterWorker : BackgroundService
 {
-    private readonly ISeriesService _seriesService;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly PeriodicTimer _timer;
     private readonly ILogger<SeriesUpdaterWorker> _logger;
 
     public SeriesUpdaterWorker(
-        ISeriesService seriesService,
+        IServiceScopeFactory serviceScopeFactory,
         IOptionsMonitor<SeriesUpdaterSettings> settings,
         ILogger<SeriesUpdaterWorker> logger)
     {
-        _seriesService = seriesService;
+        _serviceScopeFactory = serviceScopeFactory;
         _timer = new PeriodicTimer(GetPeriod());
         _logger = logger;
 
@@ -33,13 +32,12 @@ internal class SeriesUpdaterWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        using var scope = _serviceScopeFactory.CreateScope();
+        var seriesService = scope.ServiceProvider.GetRequiredService<ISeriesService>();
+
         do
         {
-            var stopwatch = Stopwatch.StartNew();
-
-            await _seriesService.UpdateSeriesAsync();
-
-            _logger.LogInformation("Series update took {ElapsedMs} ms", stopwatch.ElapsedMilliseconds);
+            await seriesService.UpdateSeriesAsync();
         }
         while (await _timer.WaitForNextTickAsync(stoppingToken));
     }
