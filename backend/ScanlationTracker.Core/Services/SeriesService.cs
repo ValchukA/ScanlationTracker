@@ -218,7 +218,7 @@ internal class SeriesService : ISeriesService
                 SeriesId = series.Id,
                 ExternalId = chaptersToSave[index].ExternalId,
                 Title = NormalizeWhitespaces(chaptersToSave[index].Title),
-                Number = previousChapterNumber++,
+                Number = ++previousChapterNumber,
                 AddedAt = updateDate,
             };
 
