@@ -97,7 +97,8 @@ internal class SeriesService : ISeriesService
                     series,
                     seriesUpdate.SeriesUrl,
                     latestSavedChapter,
-                    updateDate);
+                    updateDate,
+                    group.Name);
             }
             else
             {
@@ -105,7 +106,7 @@ internal class SeriesService : ISeriesService
                     scraper,
                     urlManager,
                     seriesRepository,
-                    group.Id,
+                    group,
                     seriesExternalId,
                     seriesUpdate.SeriesUrl,
                     updateDate);
@@ -119,7 +120,7 @@ internal class SeriesService : ISeriesService
         IScanlationScraper scraper,
         IUrlManager urlManager,
         ISeriesRepository seriesRepository,
-        Guid groupId,
+        ScanlationGroupDto group,
         string seriesExternalId,
         string seriesUrl,
         DateTimeOffset updateDate)
@@ -128,7 +129,7 @@ internal class SeriesService : ISeriesService
         var series = new SeriesDto
         {
             Id = Guid.CreateVersion7(),
-            ScanlationGroupId = groupId,
+            ScanlationGroupId = group.Id,
             ExternalId = seriesExternalId,
             Title = NormalizeWhitespaces(scrapedSeries.Title),
             RelativeCoverUrl = urlManager.ExtractRelativeCoverUrl(scrapedSeries.CoverUrl),
@@ -136,13 +137,19 @@ internal class SeriesService : ISeriesService
 
         seriesRepository.AddSeries(series);
 
-        _coreMetrics.IncrementAddedSeriesCounter();
+        _coreMetrics.IncrementAddedSeriesCounter(group.Name);
         _logger.LogInformation(
             "Added series with Id {SeriesId} and external Id {SeriesExternalId}",
             series.Id,
             series.ExternalId);
 
-        await AddChaptersAsync(urlManager, seriesRepository, scrapedSeries, series, updateDate);
+        await AddChaptersAsync(
+            urlManager,
+            seriesRepository,
+            scrapedSeries,
+            series,
+            updateDate,
+            group.Name);
     }
 
     private async Task UpdateSingleSeriesAsync(
@@ -152,7 +159,8 @@ internal class SeriesService : ISeriesService
         SeriesDto series,
         string seriesUrl,
         ChapterDto latestSavedChapter,
-        DateTimeOffset updateDate)
+        DateTimeOffset updateDate,
+        ScanlationGroupName groupName)
     {
         await using var scrapedSeries = await scraper.ScrapeSeriesAsync(seriesUrl);
         var relativeCoverUrl = urlManager.ExtractRelativeCoverUrl(scrapedSeries.CoverUrl);
@@ -173,6 +181,7 @@ internal class SeriesService : ISeriesService
             scrapedSeries,
             series,
             updateDate,
+            groupName,
             latestSavedChapter);
     }
 
@@ -182,6 +191,7 @@ internal class SeriesService : ISeriesService
         IScrapedSeries scrapedSeries,
         SeriesDto series,
         DateTimeOffset updateDate,
+        ScanlationGroupName groupName,
         ChapterDto? latestSavedChapter = null)
     {
         var chaptersToSave = new List<(string Title, string ExternalId)>();
@@ -214,7 +224,7 @@ internal class SeriesService : ISeriesService
 
             seriesRepository.AddChapter(chapter);
 
-            _coreMetrics.IncrementAddedChaptersCounter();
+            _coreMetrics.IncrementAddedChaptersCounter(groupName);
             _logger.LogInformation(
                 "Added chapter with Id {ChapterId} and external Id {ChapterExternalId} " +
                 "to series with Id {SeriesId} and external Id {SeriesExternalId}",

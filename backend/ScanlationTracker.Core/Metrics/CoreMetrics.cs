@@ -11,14 +11,12 @@ internal class CoreMetrics
     public CoreMetrics(IMeterFactory meterFactory)
     {
         var meter = meterFactory.Create(MeterName);
+        var seriesUpdatePrefix = "scanlationtracker.series_update";
 
-        _addedSeriesCounter =
-            meter.CreateCounter<int>("scanlationtracker.series_update.series_added");
-        _addedChaptersCounter =
-            meter.CreateCounter<int>("scanlationtracker.series_update.chapters_added");
-
+        _addedSeriesCounter = meter.CreateCounter<int>($"{seriesUpdatePrefix}.series_added");
+        _addedChaptersCounter = meter.CreateCounter<int>($"{seriesUpdatePrefix}.chapters_added");
         _seriesUpdateDurationHistogram = meter.CreateHistogram(
-            "scanlationtracker.series_update.duration",
+            $"{seriesUpdatePrefix}.duration",
             "s",
             advice: new InstrumentAdvice<double>
             {
@@ -28,10 +26,15 @@ internal class CoreMetrics
 
     public static string MeterName { get; } = typeof(CoreMetrics).Assembly.GetName().Name!;
 
-    public void IncrementAddedSeriesCounter() => _addedSeriesCounter.Add(1);
+    public void IncrementAddedSeriesCounter(ScanlationGroupName groupName)
+        => _addedSeriesCounter.Add(1, CreateGroupNameTag(groupName));
 
-    public void IncrementAddedChaptersCounter() => _addedChaptersCounter.Add(1);
+    public void IncrementAddedChaptersCounter(ScanlationGroupName groupName)
+        => _addedChaptersCounter.Add(1, CreateGroupNameTag(groupName));
 
     public void AddSeriesUpdateDuration(TimeSpan duration)
         => _seriesUpdateDurationHistogram.Record(duration.TotalSeconds);
+
+    private static KeyValuePair<string, object?> CreateGroupNameTag(ScanlationGroupName groupName)
+        => new("scanlation_group.name", groupName);
 }
