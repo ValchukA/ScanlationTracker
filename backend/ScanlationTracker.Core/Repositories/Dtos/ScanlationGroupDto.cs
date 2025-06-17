@@ -1,6 +1,6 @@
 ﻿namespace ScanlationTracker.Core.Repositories.Dtos;
 
-public class ScanlationGroupDto
+public record ScanlationGroupDto
 {
     public required Guid Id { get; init; }
 

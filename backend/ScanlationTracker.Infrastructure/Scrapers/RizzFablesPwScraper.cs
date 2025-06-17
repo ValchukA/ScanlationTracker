@@ -89,19 +89,6 @@ internal class RizzFablesPwScraper : IScanlationScraper
         };
     }
 
-    private static async IAsyncEnumerable<ScrapedChapter> ScrapeChaptersAsync(IPage page)
-    {
-        var chapterLocators = await page.Locator("#chapterlist a").AllAsync();
-
-        foreach (var chapterLocator in chapterLocators)
-        {
-            var url = (await chapterLocator.GetAttributeAsync("href"))!;
-            var title = (await chapterLocator.Locator("> span:nth-of-type(1)").TextContentAsync())!;
-
-            yield return new ScrapedChapter { Url = url, Title = title };
-        }
-    }
-
     private async IAsyncEnumerable<ScrapedSeriesUpdate> ScrapeLatestUpdatesFromPageAsync(
         IPage page,
         HashSet<string> scrapedSeriesUrls)
@@ -129,6 +116,28 @@ internal class RizzFablesPwScraper : IScanlationScraper
             }
 
             _logger.LogInformation("Pages shifted between iterations");
+        }
+    }
+
+    private async IAsyncEnumerable<ScrapedChapter> ScrapeChaptersAsync(IPage page)
+    {
+        var scrapedChapterUrls = new HashSet<string>();
+        var chapterLocators = await page.Locator("#chapterlist a").AllAsync();
+
+        foreach (var chapterLocator in chapterLocators)
+        {
+            var url = (await chapterLocator.GetAttributeAsync("href"))!;
+
+            if (scrapedChapterUrls.Add(url))
+            {
+                var title = (await chapterLocator.Locator("> span:nth-of-type(1)").TextContentAsync())!;
+
+                yield return new ScrapedChapter { Url = url, Title = title };
+
+                continue;
+            }
+
+            _logger.LogInformation("Detected duplicated chapters in the list");
         }
     }
 }

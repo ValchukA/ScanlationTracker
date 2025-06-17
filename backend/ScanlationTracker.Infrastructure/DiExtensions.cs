@@ -18,7 +18,7 @@ public static class DiExtensions
     public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddPostgreSql(configuration);
-        services.AddScoped<ISeriesRepository, SeriesEfRepository>();
+        services.AddSingleton<ISeriesRepositoryFactory, SeriesEfRepositoryFactory>();
         services.AddSingleton<IPwBrowserContextHolder, PwBrowserContextHolder>();
         services.AddSingleton<IUrlManagerFactory, UrlManagerFactory>();
         services.AddSingleton<IScanlationScraperFactory, ScanlationScraperFactory>();
@@ -33,7 +33,7 @@ public static class DiExtensions
             .GetRequiredSection(PostgreSqlSettings.SectionKey).Get<PostgreSqlSettings>()!;
         Validator.ValidateObject(settings, new ValidationContext(settings));
 
-        services.AddDbContext<ScanlationDbContext>(options =>
+        services.AddDbContextFactory<ScanlationDbContext>(options =>
             options.UseNpgsql(settings.ConnectionString));
     }
 }

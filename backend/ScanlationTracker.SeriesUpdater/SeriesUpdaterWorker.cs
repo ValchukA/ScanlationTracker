@@ -5,16 +5,16 @@ namespace ScanlationTracker.SeriesUpdater;
 
 internal class SeriesUpdaterWorker : BackgroundService
 {
-    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly ISeriesService _seriesService;
     private readonly PeriodicTimer _timer;
     private readonly ILogger<SeriesUpdaterWorker> _logger;
 
     public SeriesUpdaterWorker(
-        IServiceScopeFactory serviceScopeFactory,
+        ISeriesService seriesService,
         IOptionsMonitor<SeriesUpdaterSettings> settings,
         ILogger<SeriesUpdaterWorker> logger)
     {
-        _serviceScopeFactory = serviceScopeFactory;
+        _seriesService = seriesService;
         _timer = new PeriodicTimer(GetPeriod());
         _logger = logger;
 
@@ -32,12 +32,9 @@ internal class SeriesUpdaterWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var scope = _serviceScopeFactory.CreateScope();
-        var seriesService = scope.ServiceProvider.GetRequiredService<ISeriesService>();
-
         do
         {
-            await seriesService.UpdateSeriesAsync();
+            await _seriesService.UpdateSeriesAsync();
         }
         while (await _timer.WaitForNextTickAsync(stoppingToken));
     }

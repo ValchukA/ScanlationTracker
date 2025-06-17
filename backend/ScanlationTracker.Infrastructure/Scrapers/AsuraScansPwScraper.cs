@@ -85,27 +85,6 @@ internal class AsuraScansPwScraper : IScanlationScraper
         };
     }
 
-    private static async IAsyncEnumerable<ScrapedChapter> ScrapeChaptersAsync(IPage page)
-    {
-        var chapterLocators = await page
-            .Locator("div:has(> [placeholder^='Search Chapter' i]) + div > div > a").AllAsync();
-
-        foreach (var chapterLocator in chapterLocators)
-        {
-            var url = await chapterLocator.EvaluateAsync<string>("a => a.href");
-            var title = await chapterLocator.Locator("> h3:nth-of-type(1)")
-                .EvaluateAsync<string>("""
-                    h3 => [...h3.childNodes]
-                        .filter(node => [Node.TEXT_NODE, Node.ELEMENT_NODE].includes(node.nodeType)
-                            && node.textContent)
-                        .map(node => node.textContent.trimEnd())
-                        .join(' ')
-                """);
-
-            yield return new ScrapedChapter { Url = url, Title = title };
-        }
-    }
-
     private async IAsyncEnumerable<ScrapedSeriesUpdate> ScrapeLatestUpdatesFromPageAsync(
         IPage page,
         HashSet<string> scrapedSeriesUrls)
@@ -133,6 +112,36 @@ internal class AsuraScansPwScraper : IScanlationScraper
             }
 
             _logger.LogInformation("Pages shifted between iterations");
+        }
+    }
+
+    private async IAsyncEnumerable<ScrapedChapter> ScrapeChaptersAsync(IPage page)
+    {
+        var scrapedChapterUrls = new HashSet<string>();
+        var chapterLocators = await page
+            .Locator("div:has(> [placeholder^='Search Chapter' i]) + div > div > a").AllAsync();
+
+        foreach (var chapterLocator in chapterLocators)
+        {
+            var url = await chapterLocator.EvaluateAsync<string>("a => a.href");
+
+            if (scrapedChapterUrls.Add(url))
+            {
+                var title = await chapterLocator.Locator("> h3:nth-of-type(1)")
+                .EvaluateAsync<string>("""
+                    h3 => [...h3.childNodes]
+                        .filter(node => [Node.TEXT_NODE, Node.ELEMENT_NODE].includes(node.nodeType)
+                            && node.textContent)
+                        .map(node => node.textContent.trimEnd())
+                        .join(' ')
+                """);
+
+                yield return new ScrapedChapter { Url = url, Title = title };
+
+                continue;
+            }
+
+            _logger.LogInformation("Detected duplicated chapters in the list");
         }
     }
 }

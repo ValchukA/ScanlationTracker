@@ -21,6 +21,7 @@ services:
       prometheus:
         condition: service_healthy
     environment:
+      DOTNET_ENVIRONMENT: Development
       PostgreSql__ConnectionString: Host=postgresql;Username=postgres;Password=Passw0rd!;Database=ScanlationTrackerDb
       OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
       OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: http://loki:3100/otlp/v1/logs

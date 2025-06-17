@@ -18,7 +18,7 @@ internal static class UrlExtractionHelper
             : throw new ArgumentException("Provided URL is not valid");
 
         bool SegmentExists((string Segment, int Index) segmentWithIndex)
-         => uri.Segments[segmentWithIndex.Index] == $"{segmentWithIndex.Segment}/";
+            => uri.Segments[segmentWithIndex.Index] == $"{segmentWithIndex.Segment}/";
     }
 
     public static string ExtractRelativeUrlFromValidUrl(string url, Uri baseUrl)

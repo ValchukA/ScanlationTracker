@@ -8,7 +8,7 @@ public static class DiExtensions
 {
     public static void AddCore(this IServiceCollection services)
     {
-        services.AddScoped<ISeriesService, SeriesService>();
+        services.AddSingleton<ISeriesService, SeriesService>();
         services.AddSingleton<CoreMetrics>();
     }
 }

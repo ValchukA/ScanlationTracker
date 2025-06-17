@@ -24,4 +24,42 @@ internal static class MappingExtensions
             BaseCoverUrl = entity.BaseCoverUrl,
         };
     }
+
+    public static SeriesDto ToDto(this SeriesEntity entity) => new()
+    {
+        Id = entity.Id,
+        ScanlationGroupId = entity.ScanlationGroupId,
+        ExternalId = entity.ExternalId,
+        Title = entity.Title,
+        RelativeCoverUrl = entity.RelativeCoverUrl,
+    };
+
+    public static ChapterDto ToDto(this ChapterEntity entity) => new()
+    {
+        Id = entity.Id,
+        SeriesId = entity.SeriesId,
+        ExternalId = entity.ExternalId,
+        Title = entity.Title,
+        Number = entity.Number,
+        AddedAt = entity.AddedAt,
+    };
+
+    public static SeriesEntity ToEntity(this SeriesDto dto) => new()
+    {
+        Id = dto.Id,
+        ScanlationGroupId = dto.ScanlationGroupId,
+        ExternalId = dto.ExternalId,
+        Title = dto.Title,
+        RelativeCoverUrl = dto.RelativeCoverUrl,
+    };
+
+    public static ChapterEntity ToEntity(this ChapterDto dto) => new()
+    {
+        Id = dto.Id,
+        SeriesId = dto.SeriesId,
+        ExternalId = dto.ExternalId,
+        Title = dto.Title,
+        Number = dto.Number,
+        AddedAt = dto.AddedAt,
+    };
 }
