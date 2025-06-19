@@ -24,7 +24,7 @@ internal class RizzFablesPwScraper : IScanlationScraper
         _logger = logger;
     }
 
-    public async IAsyncEnumerable<ScrapedSeriesUpdate> ScrapeLatestUpdatesAsync()
+    public async IAsyncEnumerable<string> ScrapeUrlsOfLatestUpdatedSeriesAsync()
     {
         var context = await _pwBrowserContextHolder.GetContextAsync();
         var page = await context.NewPageAsync();
@@ -38,13 +38,13 @@ internal class RizzFablesPwScraper : IScanlationScraper
 
             while (true)
             {
-                _logger.LogInformation("Scraping series updates at {PageUrl}", page.Url);
+                _logger.LogInformation("Scraping updated series at {PageUrl}", page.Url);
 
-                var latestUpdates = ScrapeLatestUpdatesFromPageAsync(page, scrapedSeriesUrls);
+                var seriesUrls = ScrapeSeriesUrlsFromPageAsync(page, scrapedSeriesUrls);
 
-                await foreach (var scrapedSeries in latestUpdates)
+                await foreach (var seriesUrl in seriesUrls)
                 {
-                    yield return scrapedSeries;
+                    yield return seriesUrl;
                 }
 
                 var nextButtonLocator = page.Locator("a:has-text('Next')");
@@ -89,7 +89,7 @@ internal class RizzFablesPwScraper : IScanlationScraper
         };
     }
 
-    private async IAsyncEnumerable<ScrapedSeriesUpdate> ScrapeLatestUpdatesFromPageAsync(
+    private async IAsyncEnumerable<string> ScrapeSeriesUrlsFromPageAsync(
         IPage page,
         HashSet<string> scrapedSeriesUrls)
     {
@@ -101,21 +101,14 @@ internal class RizzFablesPwScraper : IScanlationScraper
             var seriesUrl = (await updateLocator
                 .Locator(":nth-match(a, 2)").GetAttributeAsync("href"))!;
 
-            if (scrapedSeriesUrls.Add(seriesUrl))
+            if (!scrapedSeriesUrls.Add(seriesUrl))
             {
-                var latestChapterUrl = (await updateLocator
-                    .Locator(":nth-match(a, 3)").GetAttributeAsync("href"))!;
-
-                yield return new ScrapedSeriesUpdate
-                {
-                    SeriesUrl = seriesUrl,
-                    LatestChapterUrl = latestChapterUrl,
-                };
+                _logger.LogInformation("Pages shifted between iterations");
 
                 continue;
             }
 
-            _logger.LogInformation("Pages shifted between iterations");
+            yield return seriesUrl;
         }
     }
 
@@ -128,16 +121,16 @@ internal class RizzFablesPwScraper : IScanlationScraper
         {
             var url = (await chapterLocator.GetAttributeAsync("href"))!;
 
-            if (scrapedChapterUrls.Add(url))
+            if (!scrapedChapterUrls.Add(url))
             {
-                var title = (await chapterLocator.Locator("> span:nth-of-type(1)").TextContentAsync())!;
-
-                yield return new ScrapedChapter { Url = url, Title = title };
+                _logger.LogInformation("Detected duplicated chapters in the list");
 
                 continue;
             }
 
-            _logger.LogInformation("Detected duplicated chapters in the list");
+            var title = (await chapterLocator.Locator("> span:nth-of-type(1)").TextContentAsync())!;
+
+            yield return new ScrapedChapter { Url = url, Title = title };
         }
     }
 }

@@ -4,7 +4,7 @@ namespace ScanlationTracker.Core.Scrapers;
 
 public interface IScanlationScraper
 {
-    public IAsyncEnumerable<ScrapedSeriesUpdate> ScrapeLatestUpdatesAsync();
+    public IAsyncEnumerable<string> ScrapeUrlsOfLatestUpdatedSeriesAsync();
 
     public Task<IScrapedSeries> ScrapeSeriesAsync(string seriesUrl);
 }

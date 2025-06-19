@@ -8,12 +8,12 @@ internal static class UrlExtractionHelper
         int segmentsCount,
         (string Segment, int Index)[] requiredSegmentsWithIndices)
     {
-        var isUrlValid = Uri.TryCreate(url.TrimEnd('/'), UriKind.Absolute, out var uri)
+        var urlValid = Uri.TryCreate(url.TrimEnd('/'), UriKind.Absolute, out var uri)
             && baseUrl.IsBaseOf(uri)
             && uri.Segments.Length == segmentsCount
             && requiredSegmentsWithIndices.All(SegmentExists);
 
-        return isUrlValid
+        return urlValid
             ? uri!.Segments[^1]
             : throw new ArgumentException("Provided URL is not valid");
 
@@ -23,9 +23,9 @@ internal static class UrlExtractionHelper
 
     public static string ExtractRelativeUrlFromValidUrl(string url, Uri baseUrl)
     {
-        var isUrlValid = Uri.TryCreate(url, UriKind.Absolute, out var uri) && baseUrl.IsBaseOf(uri);
+        var urlValid = Uri.TryCreate(url, UriKind.Absolute, out var uri) && baseUrl.IsBaseOf(uri);
 
-        return isUrlValid
+        return urlValid
             ? uri!.AbsolutePath
             : throw new ArgumentException("Provided URL is not valid");
     }
