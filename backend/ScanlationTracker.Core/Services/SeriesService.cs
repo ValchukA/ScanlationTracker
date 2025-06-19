@@ -78,20 +78,6 @@ internal class SeriesService : ISeriesService
         return savedSeries;
     }
 
-    private void LogExternalIdChange(
-        SeriesDto? savedSeries,
-        string seriesExternalId,
-        ref bool idChangeLogged)
-    {
-        if (savedSeries is not null && seriesExternalId != savedSeries.ExternalId
-            && !idChangeLogged)
-        {
-            _logger.LogWarning("Detected changes in external Ids");
-
-            idChangeLogged = true;
-        }
-    }
-
     private async Task UpdateSeriesFromGroupAsync(ScanlationGroupDto group, DateTimeOffset updateDate)
     {
         var seriesRepository = _seriesRepositoryFactory.CreateRepository();
@@ -112,7 +98,13 @@ internal class SeriesService : ISeriesService
                 group,
                 seriesExternalId);
 
-            LogExternalIdChange(savedSeries, seriesExternalId, ref idChangeLogged);
+            if (savedSeries is not null && seriesExternalId != savedSeries.ExternalId
+                && !idChangeLogged)
+            {
+                _logger.LogWarning("Detected changes in external Ids");
+
+                idChangeLogged = true;
+            }
 
             if (savedSeries is null)
             {
