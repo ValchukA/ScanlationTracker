@@ -17,12 +17,22 @@ internal class SeriesEfRepository : ISeriesRepository
         return [.. groupEntitties.Select(group => group.ToDto())];
     }
 
-    public async Task<SeriesDto?> GetSeriesAsync(Guid groupId, string seriesExternalId)
+    public async Task<SeriesDto?> GetSeriesByExternalIdAsync(Guid groupId, string seriesExternalId)
     {
         var seriesEntity = await _dbContext.Series
             .AsNoTracking()
             .FirstOrDefaultAsync(series => series.ScanlationGroupId == groupId
                 && series.ExternalId == seriesExternalId);
+
+        return seriesEntity?.ToDto();
+    }
+
+    public async Task<SeriesDto?> GetSeriesByTitleAsync(Guid groupId, string seriesTitle)
+    {
+        var seriesEntity = await _dbContext.Series
+            .AsNoTracking()
+            .FirstOrDefaultAsync(series => series.ScanlationGroupId == groupId
+                && series.Title == seriesTitle);
 
         return seriesEntity?.ToDto();
     }

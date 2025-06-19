@@ -6,7 +6,9 @@ public interface ISeriesRepository
 {
     public Task<ScanlationGroupDto[]> GetAllGroupsAsync();
 
-    public Task<SeriesDto?> GetSeriesAsync(Guid groupId, string seriesExternalId);
+    public Task<SeriesDto?> GetSeriesByExternalIdAsync(Guid groupId, string seriesExternalId);
+
+    public Task<SeriesDto?> GetSeriesByTitleAsync(Guid groupId, string seriesTitle);
 
     public Task<ChapterDto> GetLatestChapterAsync(Guid seriesId);
 

@@ -127,14 +127,14 @@ internal class AsuraScansPwScraper : IScanlationScraper
 
             if (scrapedChapterUrls.Add(url))
             {
-                var title = await chapterLocator.Locator("> h3:nth-of-type(1)")
-                .EvaluateAsync<string>("""
-                    h3 => [...h3.childNodes]
-                        .filter(node => [Node.TEXT_NODE, Node.ELEMENT_NODE].includes(node.nodeType)
-                            && node.textContent)
-                        .map(node => node.textContent.trimEnd())
-                        .join(' ')
-                """);
+                var title = await chapterLocator
+                    .Locator("> h3:nth-of-type(1)").EvaluateAsync<string>("""
+                        h3 => [...h3.childNodes]
+                            .filter(node => [Node.TEXT_NODE, Node.ELEMENT_NODE].includes(node.nodeType)
+                                && node.textContent)
+                            .map(node => node.textContent.trimEnd())
+                            .join(' ')
+                    """);
 
                 yield return new ScrapedChapter { Url = url, Title = title };
 

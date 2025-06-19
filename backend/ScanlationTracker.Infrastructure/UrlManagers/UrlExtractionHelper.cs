@@ -23,8 +23,7 @@ internal static class UrlExtractionHelper
 
     public static string ExtractRelativeUrlFromValidUrl(string url, Uri baseUrl)
     {
-        var isUrlValid = Uri.TryCreate(url, UriKind.Absolute, out var uri)
-            && baseUrl.IsBaseOf(uri);
+        var isUrlValid = Uri.TryCreate(url, UriKind.Absolute, out var uri) && baseUrl.IsBaseOf(uri);
 
         return isUrlValid
             ? uri!.AbsolutePath

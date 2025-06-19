@@ -33,8 +33,8 @@ internal class SeriesService : ISeriesService
 
     public async Task UpdateSeriesAsync()
     {
-        var updateDate = DateTimeOffset.UtcNow;
         var stopwatch = Stopwatch.StartNew();
+        var updateDate = DateTimeOffset.UtcNow;
         var groups = await _seriesRepositoryFactory.CreateRepository().GetAllGroupsAsync();
 
         await Parallel.ForEachAsync(groups, async (group, _) =>
@@ -59,73 +59,130 @@ internal class SeriesService : ISeriesService
     private static string NormalizeWhitespaces(string str)
         => string.Join(' ', str.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 
+    private static async Task<(SeriesDto? SavedSeries, IScrapedSeries? ScrapedSeries)> GetSeriesAsync(
+        ISeriesRepository seriesRepository,
+        IScanlationScraper scraper,
+        ScanlationGroupDto group,
+        string seriesExternalId,
+        string seriesUrl)
+    {
+        var savedSeries = await seriesRepository.GetSeriesByExternalIdAsync(
+            group.Id,
+            seriesExternalId);
+        IScrapedSeries? scrapedSeries = null;
+
+        if (savedSeries is null && group.Name == ScanlationGroupName.AsuraScans)
+        {
+            scrapedSeries = await scraper.ScrapeSeriesAsync(seriesUrl);
+            var normalizedTitle = NormalizeWhitespaces(scrapedSeries.Title);
+            savedSeries = await seriesRepository.GetSeriesByTitleAsync(group.Id, normalizedTitle);
+        }
+
+        return (savedSeries, scrapedSeries);
+    }
+
     private async Task UpdateSeriesFromGroupAsync(ScanlationGroupDto group, DateTimeOffset updateDate)
     {
-        var urlManager = _urlManagerFactory.CreateUrlManager(
-                    group.Name,
-                    group.BaseWebsiteUrl,
-                    group.BaseCoverUrl);
-        var scraper = _scraperFactory.CreateScraper(group.Name, urlManager.LatestUpdatesUrl);
         var seriesRepository = _seriesRepositoryFactory.CreateRepository();
+        var urlManager = _urlManagerFactory.CreateUrlManager(
+            group.Name,
+            group.BaseWebsiteUrl,
+            group.BaseCoverUrl);
+        var scraper = _scraperFactory.CreateScraper(group.Name, urlManager.LatestUpdatesUrl);
+        var idChangeIsLogged = false;
 
         await foreach (var seriesUpdate in scraper.ScrapeLatestUpdatesAsync())
         {
             var seriesExternalId = urlManager.ExtractSeriesId(seriesUpdate.SeriesUrl);
-            var series = await seriesRepository.GetSeriesAsync(group.Id, seriesExternalId);
+            IScrapedSeries? scrapedSeries = null;
 
-            if (series is not null)
+            try
             {
-                var latestChapterExternalId =
-                    urlManager.ExtractChapterId(seriesUpdate.LatestChapterUrl);
-                var latestSavedChapter = await seriesRepository.GetLatestChapterAsync(series.Id);
-
-                if (latestChapterExternalId == latestSavedChapter.ExternalId)
-                {
-                    _logger.LogInformation(
-                        "Latest chapter for series with Id {SeriesId} and external Id " +
-                        "{SeriesExternalId} is already saved. Remaining series are up to date",
-                        series.Id,
-                        series.ExternalId);
-
-                    break;
-                }
-
-                await UpdateSingleSeriesAsync(
-                    scraper,
-                    urlManager,
+                (var savedSeries, scrapedSeries) = await GetSeriesAsync(
                     seriesRepository,
-                    series,
-                    seriesUpdate.SeriesUrl,
-                    latestSavedChapter,
-                    updateDate,
-                    group.Name);
-            }
-            else
-            {
-                await AddSeriesAsync(
                     scraper,
-                    urlManager,
-                    seriesRepository,
                     group,
                     seriesExternalId,
-                    seriesUpdate.SeriesUrl,
-                    updateDate);
+                    seriesUpdate.SeriesUrl);
+
+                LogExternalIdChange(savedSeries, seriesExternalId, ref idChangeIsLogged);
+
+                if (savedSeries is null)
+                {
+                    scrapedSeries ??= await scraper.ScrapeSeriesAsync(seriesUpdate.SeriesUrl);
+                    await AddSeriesAsync(
+                        seriesRepository,
+                        scrapedSeries,
+                        urlManager,
+                        group,
+                        seriesExternalId,
+                        updateDate);
+                }
+                else
+                {
+                    var latestChapterExternalId = urlManager.ExtractChapterId(
+                        seriesUpdate.LatestChapterUrl);
+                    var latestSavedChapter = await seriesRepository.GetLatestChapterAsync(
+                        savedSeries.Id);
+
+                    if (latestChapterExternalId == latestSavedChapter.ExternalId
+                        && seriesExternalId == savedSeries.ExternalId)
+                    {
+                        _logger.LogInformation(
+                            "Latest chapter for series with Id {SeriesId} and external Id " +
+                            "{SeriesExternalId} is already saved. Remaining series are up to date",
+                            savedSeries.Id,
+                            savedSeries.ExternalId);
+
+                        break;
+                    }
+
+                    scrapedSeries ??= await scraper.ScrapeSeriesAsync(seriesUpdate.SeriesUrl);
+                    await UpdateSingleSeriesAsync(
+                        seriesRepository,
+                        scrapedSeries,
+                        urlManager,
+                        savedSeries,
+                        seriesExternalId,
+                        latestSavedChapter,
+                        updateDate,
+                        group.Name);
+                }
+            }
+            finally
+            {
+                if (scrapedSeries is not null)
+                {
+                    await scrapedSeries.DisposeAsync();
+                }
             }
         }
 
         await seriesRepository.SaveChangesAsync();
     }
 
+    private void LogExternalIdChange(
+        SeriesDto? savedSeries,
+        string seriesExternalId,
+        ref bool idChangeIsLogged)
+    {
+        if (savedSeries is not null && seriesExternalId != savedSeries.ExternalId
+            && !idChangeIsLogged)
+        {
+            _logger.LogWarning("Detected changes in external Ids");
+
+            idChangeIsLogged = true;
+        }
+    }
+
     private async Task AddSeriesAsync(
-        IScanlationScraper scraper,
-        IUrlManager urlManager,
         ISeriesRepository seriesRepository,
+        IScrapedSeries scrapedSeries,
+        IUrlManager urlManager,
         ScanlationGroupDto group,
         string seriesExternalId,
-        string seriesUrl,
         DateTimeOffset updateDate)
     {
-        await using var scrapedSeries = await scraper.ScrapeSeriesAsync(seriesUrl);
         var series = new SeriesDto
         {
             Id = Guid.CreateVersion7(),
@@ -144,51 +201,62 @@ internal class SeriesService : ISeriesService
             series.ExternalId);
 
         await AddChaptersAsync(
-            urlManager,
             seriesRepository,
             scrapedSeries,
+            urlManager,
             series,
             updateDate,
             group.Name);
     }
 
     private async Task UpdateSingleSeriesAsync(
-        IScanlationScraper scraper,
-        IUrlManager urlManager,
         ISeriesRepository seriesRepository,
-        SeriesDto series,
-        string seriesUrl,
+        IScrapedSeries scrapedSeries,
+        IUrlManager urlManager,
+        SeriesDto savedSeries,
+        string seriesExternalId,
         ChapterDto latestSavedChapter,
         DateTimeOffset updateDate,
         ScanlationGroupName groupName)
     {
-        await using var scrapedSeries = await scraper.ScrapeSeriesAsync(seriesUrl);
+        if (seriesExternalId != savedSeries.ExternalId)
+        {
+            savedSeries = savedSeries with { ExternalId = seriesExternalId };
+            seriesRepository.UpdateSeries(savedSeries);
+
+            _logger.LogInformation(
+                "Updated external Id of series with Id {SeriesId} to {SeriesExternalId}",
+                savedSeries.Id,
+                savedSeries.ExternalId);
+        }
+
         var relativeCoverUrl = urlManager.ExtractRelativeCoverUrl(scrapedSeries.CoverUrl);
 
-        if (series.RelativeCoverUrl != relativeCoverUrl)
+        if (relativeCoverUrl != savedSeries.RelativeCoverUrl)
         {
-            seriesRepository.UpdateSeries(series with { RelativeCoverUrl = relativeCoverUrl });
+            savedSeries = savedSeries with { RelativeCoverUrl = relativeCoverUrl };
+            seriesRepository.UpdateSeries(savedSeries);
 
             _logger.LogInformation(
                 "Updated cover URL for series with Id {SeriesId} and external Id {SeriesExternalId}",
-                series.Id,
-                series.ExternalId);
+                savedSeries.Id,
+                savedSeries.ExternalId);
         }
 
         await AddChaptersAsync(
-            urlManager,
             seriesRepository,
             scrapedSeries,
-            series,
+            urlManager,
+            savedSeries,
             updateDate,
             groupName,
             latestSavedChapter);
     }
 
     private async Task AddChaptersAsync(
-        IUrlManager urlManager,
         ISeriesRepository seriesRepository,
         IScrapedSeries scrapedSeries,
+        IUrlManager urlManager,
         SeriesDto series,
         DateTimeOffset updateDate,
         ScanlationGroupName groupName,
