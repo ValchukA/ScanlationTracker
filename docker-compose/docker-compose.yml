@@ -13,6 +13,8 @@ services:
     build:
       context: ..
       dockerfile: backend/ScanlationTracker.SeriesUpdater/Dockerfile
+    security_opt:
+      - seccomp:../backend/ScanlationTracker.SeriesUpdater/seccomp-profile.json
     depends_on:
       scanlationtracker.migration.seeding:
         condition: service_completed_successfully
