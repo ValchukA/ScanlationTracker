@@ -37,14 +37,14 @@ internal class SeriesEfRepository : ISeriesRepository
         return seriesEntity?.ToDto();
     }
 
-    public async Task<ChapterDto> GetLatestChapterAsync(Guid seriesId)
+    public async Task<ChapterDto?> GetLatestChapterAsync(Guid seriesId)
     {
         var chapterEntity = await _dbContext.Chapters
             .AsNoTracking()
             .OrderBy(chapter => chapter.Number)
-            .LastAsync(chapter => chapter.SeriesId == seriesId);
+            .LastOrDefaultAsync(chapter => chapter.SeriesId == seriesId);
 
-        return chapterEntity.ToDto();
+        return chapterEntity?.ToDto();
     }
 
     public void AddSeries(SeriesDto series) => _dbContext.Series.Add(series.ToEntity());

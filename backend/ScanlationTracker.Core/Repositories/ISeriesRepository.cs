@@ -10,7 +10,7 @@ public interface ISeriesRepository
 
     public Task<SeriesDto?> GetSeriesByTitleAsync(Guid groupId, string seriesTitle);
 
-    public Task<ChapterDto> GetLatestChapterAsync(Guid seriesId);
+    public Task<ChapterDto?> GetLatestChapterAsync(Guid seriesId);
 
     public void AddSeries(SeriesDto series);
 
