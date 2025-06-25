@@ -310,7 +310,7 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "count (count_over_time({service_name=\"ScanlationTracker.SeriesUpdater\"} | severity_text=~\"${severity:default:.*}\" | GroupName=~\"${scanlation_group:default:.*}\" $filter [$__interval]))",
+          "expr": "count(count_over_time({service_name=\"ScanlationTracker.SeriesUpdater\"} | severity_text=~\"${severity:default:.*}\" | GroupName=~\"${scanlation_group:default:.*}\" $filter [$__interval]))",
           "legendFormat": "Volume",
           "queryType": "range",
           "refId": "A"
