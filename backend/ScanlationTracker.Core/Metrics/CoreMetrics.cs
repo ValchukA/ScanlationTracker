@@ -20,7 +20,7 @@ internal class CoreMetrics
             "s",
             advice: new InstrumentAdvice<double>
             {
-                HistogramBucketBoundaries = [3, 10, 30, double.PositiveInfinity],
+                HistogramBucketBoundaries = [5, 15, 60, 300, 600],
             });
     }
 
