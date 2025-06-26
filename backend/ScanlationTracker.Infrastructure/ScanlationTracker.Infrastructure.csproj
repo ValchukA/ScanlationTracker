@@ -12,4 +12,8 @@
     <ProjectReference Include="..\ScanlationTracker.Core\ScanlationTracker.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="ScanlationTracker.Infrastructure.Tests" />
+  </ItemGroup>
+
 </Project>

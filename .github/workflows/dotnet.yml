@@ -8,8 +8,8 @@ on:
       - backend/**
 
 jobs:
-  build:
-    name: Build .NET projects
+  build-and-test:
+    name: Build and test .NET projects
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -22,3 +22,6 @@ jobs:
 
     - name: Build
       run: dotnet build /warnaserror
+
+    - name: Test
+      run: dotnet test --no-build

@@ -255,8 +255,12 @@ dotnet_diagnostic.CS1591.severity = none
 dotnet_diagnostic.S1144.severity = none
 
 # S1075: URIs should not be hardcoded
-[ScanlationTracker.Migration.Seeding/Program.cs]
+[{ScanlationTracker.Migration.Seeding/Program.cs,*Tests/**}]
 dotnet_diagnostic.S1075.severity = none
 
 [**/Migrations/*]
 generated_code = true
+
+# IDE0039: Use local function
+[*Tests/**]
+dotnet_diagnostic.IDE0039.severity = none

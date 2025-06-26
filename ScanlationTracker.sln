@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanlationTracker.Infrastru
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanlationTracker.Migration.Seeding", "backend\ScanlationTracker.Migration.Seeding\ScanlationTracker.Migration.Seeding.csproj", "{F6540108-320A-4D74-B2E3-7C1151F084C8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanlationTracker.Infrastructure.Tests", "backend\ScanlationTracker.Infrastructure.Tests\ScanlationTracker.Infrastructure.Tests.csproj", "{AEBDE95D-6FBF-4599-8595-E04CE20391E9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +54,10 @@ Global
 		{F6540108-320A-4D74-B2E3-7C1151F084C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F6540108-320A-4D74-B2E3-7C1151F084C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F6540108-320A-4D74-B2E3-7C1151F084C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AEBDE95D-6FBF-4599-8595-E04CE20391E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEBDE95D-6FBF-4599-8595-E04CE20391E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEBDE95D-6FBF-4599-8595-E04CE20391E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEBDE95D-6FBF-4599-8595-E04CE20391E9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
