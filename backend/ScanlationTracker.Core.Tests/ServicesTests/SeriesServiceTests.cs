@@ -602,16 +602,16 @@ public class SeriesServiceTests
             .CreateUrlManager(group.Name, group.BaseWebsiteUrl, group.BaseCoverUrl)
             .Returns(urlManager);
 
-        for (var i = 0; i < scrapedSeriesData.Length; i++)
+        for (var index = 0; index < scrapedSeriesData.Length; index++)
         {
             var scrapedSeries = Substitute.For<IScrapedSeries>();
 
             scrapedSeries
                 .CoverUrl
-                .Returns(scrapedSeriesData[i].CoverUrl);
+                .Returns(scrapedSeriesData[index].CoverUrl);
 
             scraper
-                .ScrapeSeriesAsync(scrapedSeriesData[i].Url)
+                .ScrapeSeriesAsync(scrapedSeriesData[index].Url)
                 .Returns(scrapedSeries);
         }
 
