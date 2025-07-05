@@ -5,71 +5,49 @@ namespace ScanlationTracker.Infrastructure.Tests.UrlManagersTests;
 
 public class AsuraScansUrlManagerTests
 {
-    private const string _baseWebsiteUrl = "https://asuracomic.net";
-    private const string _baseCoverUrl = "https://gg.asuracomic.net";
+    public static IEnumerable<TheoryDataRow<string>> InvalidSeriesUrls { get; } =
+    [
+        new("Hello world"),
+        new("https://example.com/series/series-1"),
+        new("https://asu.ra/series"),
+        new("https://asu.ra/not-series/series-1"),
+    ];
 
-    public static IEnumerable<TheoryDataRow<string>> GetInvalidSeriesUrls()
-    {
-        yield return new TheoryDataRow<string>(
-            "Hello world");
+    public static IEnumerable<TheoryDataRow<string>> InvalidChapterUrls { get; } =
+    [
+        new("Hello world"),
+        new("https://example.com/series/series-1/chapter/3"),
+        new("https://asu.ra/series/chapter"),
+        new("https://asu.ra/not-series/series-1/chapter/3"),
+        new("https://asu.ra/series/series-1/not-chapter/3"),
+    ];
 
-        yield return new TheoryDataRow<string>(
-            "https://example.com/series/the-return-of-the-crazy-demon-62275c85");
-
-        yield return new TheoryDataRow<string>(
-            $"{_baseWebsiteUrl}/series");
-
-        yield return new TheoryDataRow<string>(
-            $"{_baseWebsiteUrl}/not-series/the-return-of-the-crazy-demon-62275c85");
-    }
-
-    public static IEnumerable<TheoryDataRow<string>> GetInvalidChapterUrls()
-    {
-        yield return new TheoryDataRow<string>(
-            "Hello world");
-
-        yield return new TheoryDataRow<string>(
-            "https://example.com/series/the-return-of-the-crazy-demon-62275c85/chapter/159");
-
-        yield return new TheoryDataRow<string>(
-            $"{_baseWebsiteUrl}/series/chapter");
-
-        yield return new TheoryDataRow<string>(
-            $"{_baseWebsiteUrl}/not-series/the-return-of-the-crazy-demon-62275c85/chapter/159");
-
-        yield return new TheoryDataRow<string>(
-            $"{_baseWebsiteUrl}/series/the-return-of-the-crazy-demon-62275c85/not-chapter/159");
-    }
-
-    public static IEnumerable<TheoryDataRow<string>> GetInvalidCoverUrls()
-    {
-        yield return new TheoryDataRow<string>(
-            "Hello world");
-
-        yield return new TheoryDataRow<string>(
-            "https://example.com/storage/media/79/1be5e62f.webp");
-    }
+    public static IEnumerable<TheoryDataRow<string>> InvalidCoverUrls { get; } =
+    [
+        new("Hello world"),
+        new("https://example.com/series-1.webp"),
+    ];
 
     [Fact]
     public void ExtractSeriesId_ReturnsSeriesId()
     {
         // Arrange
-        var seriesUrl = $"{_baseWebsiteUrl}/series/the-return-of-the-crazy-demon-62275c85";
-        var urlManager = new AsuraScansUrlManager(_baseWebsiteUrl, _baseCoverUrl);
+        var seriesUrl = $"https://asu.ra/series/series-1";
+        var urlManager = new AsuraScansUrlManager("https://asu.ra", "https://gg.asu.ra");
 
         // Act
         var seriesId = urlManager.ExtractSeriesId(seriesUrl);
 
         // Assert
-        Assert.Equal("the-return-of-the-crazy-demon-62275c85", seriesId);
+        Assert.Equal("series-1", seriesId);
     }
 
     [Theory]
-    [MemberData(nameof(GetInvalidSeriesUrls))]
+    [MemberData(nameof(InvalidSeriesUrls))]
     public void ExtractSeriesId_ThrowsArgumentException_WhenSeriesUrlIsInvalid(string seriesUrl)
     {
         // Arrange
-        var urlManager = new AsuraScansUrlManager(_baseWebsiteUrl, _baseCoverUrl);
+        var urlManager = new AsuraScansUrlManager("https://asu.ra", "https://gg.asu.ra");
 
         // Act
         var action = () => urlManager.ExtractSeriesId(seriesUrl);
@@ -82,22 +60,22 @@ public class AsuraScansUrlManagerTests
     public void ExtractChapterId_ReturnsChapterId()
     {
         // Arrange
-        var chapterUrl = $"{_baseWebsiteUrl}/series/the-return-of-the-crazy-demon-62275c85/chapter/159";
-        var urlManager = new AsuraScansUrlManager(_baseWebsiteUrl, _baseCoverUrl);
+        var chapterUrl = $"https://asu.ra/series/series-1/chapter/3";
+        var urlManager = new AsuraScansUrlManager("https://asu.ra", "https://gg.asu.ra");
 
         // Act
         var chapterId = urlManager.ExtractChapterId(chapterUrl);
 
         // Assert
-        Assert.Equal("159", chapterId);
+        Assert.Equal("3", chapterId);
     }
 
     [Theory]
-    [MemberData(nameof(GetInvalidChapterUrls))]
+    [MemberData(nameof(InvalidChapterUrls))]
     public void ExtractChapterId_ThrowsArgumentException_WhenChapterUrlIsInvalid(string chapterUrl)
     {
         // Arrange
-        var urlManager = new AsuraScansUrlManager(_baseWebsiteUrl, _baseCoverUrl);
+        var urlManager = new AsuraScansUrlManager("https://asu.ra", "https://gg.asu.ra");
 
         // Act
         var action = () => urlManager.ExtractChapterId(chapterUrl);
@@ -110,22 +88,22 @@ public class AsuraScansUrlManagerTests
     public void ExtractRelativeCoverUrl_ReturnsRelativeCoverUrl()
     {
         // Arrange
-        var coverUrl = $"{_baseCoverUrl}/storage/media/79/1be5e62f.webp";
-        var urlManager = new AsuraScansUrlManager(_baseWebsiteUrl, _baseCoverUrl);
+        var coverUrl = $"https://gg.asu.ra/series-1.webp";
+        var urlManager = new AsuraScansUrlManager("https://asu.ra", "https://gg.asu.ra");
 
         // Act
         var relativeCoverUrl = urlManager.ExtractRelativeCoverUrl(coverUrl);
 
         // Assert
-        Assert.Equal("/storage/media/79/1be5e62f.webp", relativeCoverUrl);
+        Assert.Equal("/series-1.webp", relativeCoverUrl);
     }
 
     [Theory]
-    [MemberData(nameof(GetInvalidCoverUrls))]
+    [MemberData(nameof(InvalidCoverUrls))]
     public void ExtractRelativeCoverUrl_ThrowsArgumentException_WhenCoverUrlIsInvalid(string coverUrl)
     {
         // Arrange
-        var urlManager = new AsuraScansUrlManager(_baseWebsiteUrl, _baseCoverUrl);
+        var urlManager = new AsuraScansUrlManager("https://asu.ra", "https://gg.asu.ra");
 
         // Act
         var action = () => urlManager.ExtractRelativeCoverUrl(coverUrl);
