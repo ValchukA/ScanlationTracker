@@ -313,10 +313,10 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
     public async Task GetLatestChapterAsync_ReturnsNull_WhenNotFound()
     {
         // Act
-        var series = await _seriesRepository.GetLatestChapterAsync(Guid.Empty);
+        var latestChapter = await _seriesRepository.GetLatestChapterAsync(Guid.Empty);
 
         // Assert
-        Assert.Null(series);
+        Assert.Null(latestChapter);
     }
 
     [Fact]
