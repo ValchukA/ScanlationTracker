@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+﻿using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using ScanlationTracker.Core.Metrics;
@@ -16,14 +15,28 @@ namespace ScanlationTracker.Core.Tests.ServicesTests;
 
 public class SeriesServiceTests
 {
-    private readonly ILogger<SeriesService> _logger = new NullLogger<SeriesService>();
-    private readonly CoreMetrics _coreMetrics;
+    private readonly SeriesService _seriesService;
+
+    private readonly ISeriesRepositoryFactory _seriesRepositoryFactory =
+        Substitute.For<ISeriesRepositoryFactory>();
+
+    private readonly IUrlManagerFactory _urlManagerFactory =
+        Substitute.For<IUrlManagerFactory>();
+
+    private readonly IScanlationScraperFactory _scraperFactory =
+        Substitute.For<IScanlationScraperFactory>();
 
     public SeriesServiceTests()
     {
         var meterFactory = Substitute.For<IMeterFactory>();
         meterFactory.Create(Arg.Any<MeterOptions>()).Returns(new Meter("Test Meter"));
-        _coreMetrics = new CoreMetrics(meterFactory);
+
+        _seriesService = new SeriesService(
+            _seriesRepositoryFactory,
+            _urlManagerFactory,
+            _scraperFactory,
+            new NullLogger<SeriesService>(),
+            new CoreMetrics(meterFactory));
     }
 
     [Fact]
@@ -63,12 +76,9 @@ public class SeriesServiceTests
         var savedSeriesId = Guid.Empty;
 
         var seriesRepository = Substitute.For<ISeriesRepository>();
-        var seriesRepositoryFactory = Substitute.For<ISeriesRepositoryFactory>();
         var urlManager = Substitute.For<IUrlManager>();
-        var urlManagerFactory = Substitute.For<IUrlManagerFactory>();
         var scrapedSeries = Substitute.For<IScrapedSeries>();
         var scraper = Substitute.For<IScanlationScraper>();
-        var scraperFactory = Substitute.For<IScanlationScraperFactory>();
 
         seriesRepository
             .GetAllGroupsAsync()
@@ -78,7 +88,7 @@ public class SeriesServiceTests
                 Arg.Is<SeriesDto>(series => series.ExternalId == "series-1")))
             .Do(callInfo => savedSeriesId = callInfo.Arg<SeriesDto>().Id);
 
-        seriesRepositoryFactory
+        _seriesRepositoryFactory
             .CreateRepository()
             .Returns(seriesRepository);
 
@@ -98,7 +108,7 @@ public class SeriesServiceTests
             .ExtractChapterId(scrapedSeriesData.Chapters[1].Url)
             .Returns("1");
 
-        urlManagerFactory
+        _urlManagerFactory
             .CreateUrlManager(group.Name, group.BaseWebsiteUrl, group.BaseCoverUrl)
             .Returns(urlManager);
 
@@ -119,19 +129,12 @@ public class SeriesServiceTests
             .ScrapeSeriesAsync(scrapedSeriesData.Url)
             .Returns(scrapedSeries);
 
-        scraperFactory
+        _scraperFactory
             .CreateScraper(group.Name, latestUpdatesUrl)
             .Returns(scraper);
 
-        var seriesService = new SeriesService(
-            seriesRepositoryFactory,
-            urlManagerFactory,
-            scraperFactory,
-            _logger,
-            _coreMetrics);
-
         // Act
-        await seriesService.UpdateSeriesAsync();
+        await _seriesService.UpdateSeriesAsync();
 
         // Assert
         seriesRepository
@@ -199,18 +202,15 @@ public class SeriesServiceTests
         };
 
         var seriesRepository = Substitute.For<ISeriesRepository>();
-        var seriesRepositoryFactory = Substitute.For<ISeriesRepositoryFactory>();
         var urlManager = Substitute.For<IUrlManager>();
-        var urlManagerFactory = Substitute.For<IUrlManagerFactory>();
         var scrapedSeries = Substitute.For<IScrapedSeries>();
         var scraper = Substitute.For<IScanlationScraper>();
-        var scraperFactory = Substitute.For<IScanlationScraperFactory>();
 
         seriesRepository
             .GetAllGroupsAsync()
             .Returns([group]);
 
-        seriesRepositoryFactory
+        _seriesRepositoryFactory
             .CreateRepository()
             .Returns(seriesRepository);
 
@@ -218,7 +218,7 @@ public class SeriesServiceTests
             .LatestUpdatesUrl
             .Returns(latestUpdatesUrl);
 
-        urlManagerFactory
+        _urlManagerFactory
             .CreateUrlManager(group.Name, group.BaseWebsiteUrl, group.BaseCoverUrl)
             .Returns(urlManager);
 
@@ -236,19 +236,12 @@ public class SeriesServiceTests
             .ScrapeSeriesAsync(scrapedSeriesData.Url)
             .Returns(scrapedSeries);
 
-        scraperFactory
+        _scraperFactory
             .CreateScraper(group.Name, latestUpdatesUrl)
             .Returns(scraper);
 
-        var seriesService = new SeriesService(
-            seriesRepositoryFactory,
-            urlManagerFactory,
-            scraperFactory,
-            _logger,
-            _coreMetrics);
-
         // Act
-        await seriesService.UpdateSeriesAsync();
+        await _seriesService.UpdateSeriesAsync();
 
         // Assert
         seriesRepository
@@ -318,12 +311,9 @@ public class SeriesServiceTests
         };
 
         var seriesRepository = Substitute.For<ISeriesRepository>();
-        var seriesRepositoryFactory = Substitute.For<ISeriesRepositoryFactory>();
         var urlManager = Substitute.For<IUrlManager>();
-        var urlManagerFactory = Substitute.For<IUrlManagerFactory>();
         var scrapedSeries = Substitute.For<IScrapedSeries>();
         var scraper = Substitute.For<IScanlationScraper>();
-        var scraperFactory = Substitute.For<IScanlationScraperFactory>();
 
         seriesRepository
             .GetAllGroupsAsync()
@@ -335,7 +325,7 @@ public class SeriesServiceTests
             .GetLatestChapterAsync(savedSeries.Id)
             .Returns(latestSavedChapter);
 
-        seriesRepositoryFactory
+        _seriesRepositoryFactory
             .CreateRepository()
             .Returns(seriesRepository);
 
@@ -355,7 +345,7 @@ public class SeriesServiceTests
             .ExtractChapterId(scrapedSeriesData.Chapters[1].Url)
             .Returns("1");
 
-        urlManagerFactory
+        _urlManagerFactory
             .CreateUrlManager(group.Name, group.BaseWebsiteUrl, group.BaseCoverUrl)
             .Returns(urlManager);
 
@@ -373,19 +363,12 @@ public class SeriesServiceTests
             .ScrapeSeriesAsync(scrapedSeriesData.Url)
             .Returns(scrapedSeries);
 
-        scraperFactory
+        _scraperFactory
             .CreateScraper(group.Name, latestUpdatesUrl)
             .Returns(scraper);
 
-        var seriesService = new SeriesService(
-            seriesRepositoryFactory,
-            urlManagerFactory,
-            scraperFactory,
-            _logger,
-            _coreMetrics);
-
         // Act
-        await seriesService.UpdateSeriesAsync();
+        await _seriesService.UpdateSeriesAsync();
 
         // Assert
         seriesRepository
@@ -443,12 +426,9 @@ public class SeriesServiceTests
         };
 
         var seriesRepository = Substitute.For<ISeriesRepository>();
-        var seriesRepositoryFactory = Substitute.For<ISeriesRepositoryFactory>();
         var urlManager = Substitute.For<IUrlManager>();
-        var urlManagerFactory = Substitute.For<IUrlManagerFactory>();
         var scrapedSeries = Substitute.For<IScrapedSeries>();
         var scraper = Substitute.For<IScanlationScraper>();
-        var scraperFactory = Substitute.For<IScanlationScraperFactory>();
 
         seriesRepository
             .GetAllGroupsAsync()
@@ -457,7 +437,7 @@ public class SeriesServiceTests
             .GetSeriesByTitleAsync(group.Id, savedSeries.Title)
             .Returns(savedSeries);
 
-        seriesRepositoryFactory
+        _seriesRepositoryFactory
             .CreateRepository()
             .Returns(seriesRepository);
 
@@ -468,7 +448,7 @@ public class SeriesServiceTests
             .ExtractSeriesId(scrapedSeriesData.Url)
             .Returns("series-1-updated");
 
-        urlManagerFactory
+        _urlManagerFactory
             .CreateUrlManager(group.Name, group.BaseWebsiteUrl, group.BaseCoverUrl)
             .Returns(urlManager);
 
@@ -483,19 +463,12 @@ public class SeriesServiceTests
             .ScrapeSeriesAsync(scrapedSeriesData.Url)
             .Returns(scrapedSeries);
 
-        scraperFactory
+        _scraperFactory
             .CreateScraper(group.Name, latestUpdatesUrl)
             .Returns(scraper);
 
-        var seriesService = new SeriesService(
-            seriesRepositoryFactory,
-            urlManagerFactory,
-            scraperFactory,
-            _logger,
-            _coreMetrics);
-
         // Act
-        await seriesService.UpdateSeriesAsync();
+        await _seriesService.UpdateSeriesAsync();
 
         // Assert
         seriesRepository
@@ -562,11 +535,8 @@ public class SeriesServiceTests
         };
 
         var seriesRepository = Substitute.For<ISeriesRepository>();
-        var seriesRepositoryFactory = Substitute.For<ISeriesRepositoryFactory>();
         var urlManager = Substitute.For<IUrlManager>();
-        var urlManagerFactory = Substitute.For<IUrlManagerFactory>();
         var scraper = Substitute.For<IScanlationScraper>();
-        var scraperFactory = Substitute.For<IScanlationScraperFactory>();
 
         seriesRepository
             .GetAllGroupsAsync()
@@ -578,7 +548,7 @@ public class SeriesServiceTests
             .GetSeriesByExternalIdAsync(group.Id, "series-2")
             .Returns(savedSeries[1]);
 
-        seriesRepositoryFactory
+        _seriesRepositoryFactory
             .CreateRepository()
             .Returns(seriesRepository);
 
@@ -598,7 +568,7 @@ public class SeriesServiceTests
             .ExtractRelativeCoverUrl(scrapedSeriesData[1].CoverUrl)
             .Returns("/series-2.webp");
 
-        urlManagerFactory
+        _urlManagerFactory
             .CreateUrlManager(group.Name, group.BaseWebsiteUrl, group.BaseCoverUrl)
             .Returns(urlManager);
 
@@ -619,19 +589,12 @@ public class SeriesServiceTests
             .ScrapeUrlsOfLatestUpdatedSeriesAsync()
             .Returns(ToAsync(scrapedSeriesData.Select(series => series.Url)));
 
-        scraperFactory
+        _scraperFactory
             .CreateScraper(group.Name, latestUpdatesUrl)
             .Returns(scraper);
 
-        var seriesService = new SeriesService(
-            seriesRepositoryFactory,
-            urlManagerFactory,
-            scraperFactory,
-            _logger,
-            _coreMetrics);
-
         // Act
-        await seriesService.UpdateSeriesAsync();
+        await _seriesService.UpdateSeriesAsync();
 
         // Assert
         seriesRepository
@@ -671,17 +634,14 @@ public class SeriesServiceTests
         };
 
         var seriesRepository = Substitute.For<ISeriesRepository>();
-        var seriesRepositoryFactory = Substitute.For<ISeriesRepositoryFactory>();
         var urlManager = Substitute.For<IUrlManager>();
-        var urlManagerFactory = Substitute.For<IUrlManagerFactory>();
         var scraper = Substitute.For<IScanlationScraper>();
-        var scraperFactory = Substitute.For<IScanlationScraperFactory>();
 
         seriesRepository
             .GetAllGroupsAsync()
             .Returns([group]);
 
-        seriesRepositoryFactory
+        _seriesRepositoryFactory
             .CreateRepository()
             .Returns(seriesRepository);
 
@@ -689,7 +649,7 @@ public class SeriesServiceTests
             .LatestUpdatesUrl
             .Returns(latestUpdatesUrl);
 
-        urlManagerFactory
+        _urlManagerFactory
             .CreateUrlManager(group.Name, group.BaseWebsiteUrl, group.BaseCoverUrl)
             .Returns(urlManager);
 
@@ -697,19 +657,12 @@ public class SeriesServiceTests
             .ScrapeUrlsOfLatestUpdatedSeriesAsync()
             .Throws<Exception>();
 
-        scraperFactory
+        _scraperFactory
             .CreateScraper(group.Name, latestUpdatesUrl)
             .Returns(scraper);
 
-        var seriesService = new SeriesService(
-            seriesRepositoryFactory,
-            urlManagerFactory,
-            scraperFactory,
-            _logger,
-            _coreMetrics);
-
         // Act
-        var exception = await Record.ExceptionAsync(seriesService.UpdateSeriesAsync);
+        var exception = await Record.ExceptionAsync(_seriesService.UpdateSeriesAsync);
 
         // Assert
         Assert.Null(exception);

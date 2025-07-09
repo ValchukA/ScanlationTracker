@@ -264,3 +264,10 @@ generated_code = true
 # IDE0039: Use local function
 [*Tests/**]
 dotnet_diagnostic.IDE0039.severity = none
+
+# xUnit1047: Avoid using TheoryDataRow arguments that might not be serializable
+dotnet_diagnostic.xUnit1047.severity = none
+
+# VSTHRD103: Call async methods when in an async method
+[SeriesEfRepositoryTests.cs]
+dotnet_diagnostic.VSTHRD103.severity = none
