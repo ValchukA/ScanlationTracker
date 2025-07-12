@@ -413,7 +413,7 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
         // Assert
         Assert.Contains(
             "duplicate key value violates unique constraint",
-            exception!.InnerException!.Message);
+            exception?.InnerException?.Message);
     }
 
     [Fact]
@@ -634,6 +634,6 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
         // Assert
         Assert.Contains(
             "duplicate key value violates unique constraint",
-            exception!.InnerException!.Message);
+            exception?.InnerException?.Message);
     }
 }
