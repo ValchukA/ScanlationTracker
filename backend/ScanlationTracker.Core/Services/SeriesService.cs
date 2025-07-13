@@ -232,7 +232,7 @@ internal class SeriesService : ISeriesService
         ScanlationGroupName groupName,
         Chapter? latestSavedChapter = null)
     {
-        var chaptersToSave = new List<(string Title, string ExternalId)>();
+        var chaptersToSave = new List<(string ExternalId, string Title)>();
 
         await foreach (var chapter in scrapedSeries.LatestChaptersAsync)
         {
@@ -243,7 +243,7 @@ internal class SeriesService : ISeriesService
                 break;
             }
 
-            chaptersToSave.Add((chapter.Title, chapterExternalId));
+            chaptersToSave.Add((chapterExternalId, chapter.Title));
         }
 
         var previousChapterNumber = latestSavedChapter?.Number ?? 0;
