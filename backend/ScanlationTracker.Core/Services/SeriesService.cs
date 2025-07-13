@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using ScanlationTracker.Core.Metrics;
+using ScanlationTracker.Core.Models;
 using ScanlationTracker.Core.Repositories;
-using ScanlationTracker.Core.Repositories.Dtos;
 using ScanlationTracker.Core.Scrapers;
-using ScanlationTracker.Core.Scrapers.Dtos;
+using ScanlationTracker.Core.Scrapers.Contracts;
 using ScanlationTracker.Core.UrlManagers;
 using System.Diagnostics;
 
@@ -59,10 +59,10 @@ internal class SeriesService : ISeriesService
     private static string NormalizeWhitespaces(string str)
         => string.Join(' ', str.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 
-    private static async Task<SeriesDto?> GetSavedSeriesAsync(
+    private static async Task<Series?> GetSavedSeriesAsync(
         ISeriesRepository seriesRepository,
         IScrapedSeries scrapedSeries,
-        ScanlationGroupDto group,
+        ScanlationGroup group,
         string seriesExternalId)
     {
         var savedSeries = await seriesRepository.GetSeriesByExternalIdAsync(
@@ -78,7 +78,7 @@ internal class SeriesService : ISeriesService
         return savedSeries;
     }
 
-    private async Task UpdateSeriesFromGroupAsync(ScanlationGroupDto group, DateTimeOffset updateDate)
+    private async Task UpdateSeriesFromGroupAsync(ScanlationGroup group, DateTimeOffset updateDate)
     {
         var seriesRepository = _seriesRepositoryFactory.CreateRepository();
         var urlManager = _urlManagerFactory.CreateUrlManager(
@@ -143,11 +143,11 @@ internal class SeriesService : ISeriesService
         ISeriesRepository seriesRepository,
         IScrapedSeries scrapedSeries,
         IUrlManager urlManager,
-        ScanlationGroupDto group,
+        ScanlationGroup group,
         string seriesExternalId,
         DateTimeOffset updateDate)
     {
-        var series = new SeriesDto
+        var series = new Series
         {
             Id = Guid.CreateVersion7(),
             ScanlationGroupId = group.Id,
@@ -177,7 +177,7 @@ internal class SeriesService : ISeriesService
         ISeriesRepository seriesRepository,
         IScrapedSeries scrapedSeries,
         IUrlManager urlManager,
-        SeriesDto savedSeries,
+        Series savedSeries,
         string seriesExternalId,
         DateTimeOffset updateDate,
         ScanlationGroupName groupName)
@@ -227,10 +227,10 @@ internal class SeriesService : ISeriesService
         ISeriesRepository seriesRepository,
         IScrapedSeries scrapedSeries,
         IUrlManager urlManager,
-        SeriesDto series,
+        Series series,
         DateTimeOffset updateDate,
         ScanlationGroupName groupName,
-        ChapterDto? latestSavedChapter = null)
+        Chapter? latestSavedChapter = null)
     {
         var chaptersToSave = new List<(string Title, string ExternalId)>();
 
@@ -250,7 +250,7 @@ internal class SeriesService : ISeriesService
 
         for (var index = chaptersToSave.Count - 1; index >= 0; index--)
         {
-            var chapter = new ChapterDto
+            var chapter = new Chapter
             {
                 Id = Guid.CreateVersion7(),
                 SeriesId = series.Id,

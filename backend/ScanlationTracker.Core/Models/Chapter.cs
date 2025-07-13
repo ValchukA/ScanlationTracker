@@ -1,6 +1,6 @@
-﻿namespace ScanlationTracker.Core.Repositories.Dtos;
+﻿namespace ScanlationTracker.Core.Models;
 
-public record ChapterDto
+public record Chapter
 {
     public required Guid Id { get; init; }
 

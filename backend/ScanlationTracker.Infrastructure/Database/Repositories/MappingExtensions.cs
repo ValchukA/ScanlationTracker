@@ -1,12 +1,12 @@
 ﻿using ScanlationTracker.Core;
-using ScanlationTracker.Core.Repositories.Dtos;
+using ScanlationTracker.Core.Models;
 using ScanlationTracker.Infrastructure.Database.Entities;
 
 namespace ScanlationTracker.Infrastructure.Database.Repositories;
 
 internal static class MappingExtensions
 {
-    public static ScanlationGroupDto ToDto(this ScanlationGroupEntity entity)
+    public static ScanlationGroup ToModel(this ScanlationGroupEntity entity)
     {
         var name = entity.Name switch
         {
@@ -15,7 +15,7 @@ internal static class MappingExtensions
             _ => throw new ArgumentException("Unexpected value"),
         };
 
-        return new ScanlationGroupDto
+        return new ScanlationGroup
         {
             Id = entity.Id,
             Name = name,
@@ -25,7 +25,7 @@ internal static class MappingExtensions
         };
     }
 
-    public static SeriesDto ToDto(this SeriesEntity entity) => new()
+    public static Series ToModel(this SeriesEntity entity) => new()
     {
         Id = entity.Id,
         ScanlationGroupId = entity.ScanlationGroupId,
@@ -34,7 +34,7 @@ internal static class MappingExtensions
         RelativeCoverUrl = entity.RelativeCoverUrl,
     };
 
-    public static ChapterDto ToDto(this ChapterEntity entity) => new()
+    public static Chapter ToModel(this ChapterEntity entity) => new()
     {
         Id = entity.Id,
         SeriesId = entity.SeriesId,
@@ -44,22 +44,22 @@ internal static class MappingExtensions
         AddedAt = entity.AddedAt,
     };
 
-    public static SeriesEntity ToEntity(this SeriesDto dto) => new()
+    public static SeriesEntity ToEntity(this Series model) => new()
     {
-        Id = dto.Id,
-        ScanlationGroupId = dto.ScanlationGroupId,
-        ExternalId = dto.ExternalId,
-        Title = dto.Title,
-        RelativeCoverUrl = dto.RelativeCoverUrl,
+        Id = model.Id,
+        ScanlationGroupId = model.ScanlationGroupId,
+        ExternalId = model.ExternalId,
+        Title = model.Title,
+        RelativeCoverUrl = model.RelativeCoverUrl,
     };
 
-    public static ChapterEntity ToEntity(this ChapterDto dto) => new()
+    public static ChapterEntity ToEntity(this Chapter model) => new()
     {
-        Id = dto.Id,
-        SeriesId = dto.SeriesId,
-        ExternalId = dto.ExternalId,
-        Title = dto.Title,
-        Number = dto.Number,
-        AddedAt = dto.AddedAt,
+        Id = model.Id,
+        SeriesId = model.SeriesId,
+        ExternalId = model.ExternalId,
+        Title = model.Title,
+        Number = model.Number,
+        AddedAt = model.AddedAt,
     };
 }

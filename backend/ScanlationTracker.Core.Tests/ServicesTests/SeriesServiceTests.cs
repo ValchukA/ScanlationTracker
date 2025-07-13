@@ -2,10 +2,10 @@
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using ScanlationTracker.Core.Metrics;
+using ScanlationTracker.Core.Models;
 using ScanlationTracker.Core.Repositories;
-using ScanlationTracker.Core.Repositories.Dtos;
 using ScanlationTracker.Core.Scrapers;
-using ScanlationTracker.Core.Scrapers.Dtos;
+using ScanlationTracker.Core.Scrapers.Contracts;
 using ScanlationTracker.Core.Services;
 using ScanlationTracker.Core.UrlManagers;
 using System.Diagnostics.Metrics;
@@ -44,7 +44,7 @@ public class SeriesServiceTests
     {
         // Arrange
         var latestUpdatesUrl = "https://asu.ra";
-        var group = new ScanlationGroupDto()
+        var group = new ScanlationGroup()
         {
             Id = Guid.Parse("0197c07b-bbbb-777a-a143-71443604c4e6"),
             Name = ScanlationGroupName.AsuraScans,
@@ -85,8 +85,8 @@ public class SeriesServiceTests
             .Returns([group]);
         seriesRepository
             .When(repository => repository.AddSeries(
-                Arg.Is<SeriesDto>(series => series.ExternalId == "series-1")))
-            .Do(callInfo => savedSeriesId = callInfo.Arg<SeriesDto>().Id);
+                Arg.Is<Series>(series => series.ExternalId == "series-1")))
+            .Do(callInfo => savedSeriesId = callInfo.Arg<Series>().Id);
 
         _seriesRepositoryFactory
             .CreateRepository()
@@ -139,7 +139,7 @@ public class SeriesServiceTests
         // Assert
         seriesRepository
             .Received()
-            .AddSeries(Arg.Is<SeriesDto>(series =>
+            .AddSeries(Arg.Is<Series>(series =>
                 series.Id != Guid.Empty
                 && series.ScanlationGroupId == Guid.Parse("0197c07b-bbbb-777a-a143-71443604c4e6")
                 && series.ExternalId == "series-1"
@@ -147,7 +147,7 @@ public class SeriesServiceTests
                 && series.RelativeCoverUrl == "/series-1.webp"));
         seriesRepository
             .Received()
-            .AddChapter(Arg.Is<ChapterDto>(chapter =>
+            .AddChapter(Arg.Is<Chapter>(chapter =>
                 chapter.Id != Guid.Empty
                 && chapter.SeriesId == savedSeriesId
                 && chapter.ExternalId == "2"
@@ -156,7 +156,7 @@ public class SeriesServiceTests
                 && chapter.AddedAt != default));
         seriesRepository
             .Received()
-            .AddChapter(Arg.Is<ChapterDto>(chapter =>
+            .AddChapter(Arg.Is<Chapter>(chapter =>
                 chapter.Id != Guid.Empty
                 && chapter.SeriesId == savedSeriesId
                 && chapter.ExternalId == "1"
@@ -173,7 +173,7 @@ public class SeriesServiceTests
     {
         // Arrange
         var latestUpdatesUrl = "https://asu.ra";
-        var group = new ScanlationGroupDto()
+        var group = new ScanlationGroup()
         {
             Id = Guid.Parse("0197c07b-bbbb-777a-a143-71443604c4e6"),
             Name = ScanlationGroupName.AsuraScans,
@@ -246,13 +246,13 @@ public class SeriesServiceTests
         // Assert
         seriesRepository
             .Received()
-            .AddSeries(Arg.Is<SeriesDto>(series => series.Title == "Series 1"));
+            .AddSeries(Arg.Is<Series>(series => series.Title == "Series 1"));
         seriesRepository
             .Received()
-            .AddChapter(Arg.Is<ChapterDto>(chapter => chapter.Title == "Chapter 2"));
+            .AddChapter(Arg.Is<Chapter>(chapter => chapter.Title == "Chapter 2"));
         seriesRepository
             .Received()
-            .AddChapter(Arg.Is<ChapterDto>(chapter => chapter.Title == "Chapter 1"));
+            .AddChapter(Arg.Is<Chapter>(chapter => chapter.Title == "Chapter 1"));
         await seriesRepository
             .Received()
             .SaveChangesAsync();
@@ -263,7 +263,7 @@ public class SeriesServiceTests
     {
         // Arrange
         var latestUpdatesUrl = "https://asu.ra";
-        var group = new ScanlationGroupDto()
+        var group = new ScanlationGroup()
         {
             Id = Guid.Parse("0197c07b-bbbb-777a-a143-71443604c4e6"),
             Name = ScanlationGroupName.AsuraScans,
@@ -272,7 +272,7 @@ public class SeriesServiceTests
             BaseCoverUrl = "https://gg.asu.ra",
         };
 
-        var savedSeries = new SeriesDto
+        var savedSeries = new Series
         {
             Id = Guid.Parse("0197cce4-ac80-7c2d-9426-2d69ba7de348"),
             ScanlationGroupId = group.Id,
@@ -281,7 +281,7 @@ public class SeriesServiceTests
             RelativeCoverUrl = "/series-1.webp",
         };
 
-        var latestSavedChapter = new ChapterDto
+        var latestSavedChapter = new Chapter
         {
             Id = Guid.Parse("0197d19d-04e6-7867-9236-bd33caabfb4b"),
             SeriesId = savedSeries.Id,
@@ -373,7 +373,7 @@ public class SeriesServiceTests
         // Assert
         seriesRepository
             .Received()
-            .UpdateSeries(Arg.Is<SeriesDto>(series =>
+            .UpdateSeries(Arg.Is<Series>(series =>
                 series.Id == Guid.Parse("0197cce4-ac80-7c2d-9426-2d69ba7de348")
                 && series.ScanlationGroupId == Guid.Parse("0197c07b-bbbb-777a-a143-71443604c4e6")
                 && series.ExternalId == "series-1"
@@ -381,7 +381,7 @@ public class SeriesServiceTests
                 && series.RelativeCoverUrl == "/series-1-updated.webp"));
         seriesRepository
             .Received()
-            .AddChapter(Arg.Is<ChapterDto>(chapter =>
+            .AddChapter(Arg.Is<Chapter>(chapter =>
                 chapter.Id != Guid.Empty
                 && chapter.SeriesId == Guid.Parse("0197cce4-ac80-7c2d-9426-2d69ba7de348")
                 && chapter.ExternalId == "2"
@@ -390,7 +390,7 @@ public class SeriesServiceTests
                 && chapter.AddedAt != default));
         seriesRepository
             .DidNotReceive()
-            .AddChapter(Arg.Is<ChapterDto>(chapter => chapter.ExternalId == "1"));
+            .AddChapter(Arg.Is<Chapter>(chapter => chapter.ExternalId == "1"));
         await seriesRepository
             .Received()
             .SaveChangesAsync();
@@ -401,7 +401,7 @@ public class SeriesServiceTests
     {
         // Arrange
         var latestUpdatesUrl = "https://asu.ra";
-        var group = new ScanlationGroupDto()
+        var group = new ScanlationGroup()
         {
             Id = Guid.Parse("0197c07b-bbbb-777a-a143-71443604c4e6"),
             Name = ScanlationGroupName.AsuraScans,
@@ -410,7 +410,7 @@ public class SeriesServiceTests
             BaseCoverUrl = "https://gg.asu.ra",
         };
 
-        var savedSeries = new SeriesDto
+        var savedSeries = new Series
         {
             Id = Guid.Parse("0197cce4-ac80-7c2d-9426-2d69ba7de348"),
             ScanlationGroupId = group.Id,
@@ -473,7 +473,7 @@ public class SeriesServiceTests
         // Assert
         seriesRepository
             .Received()
-            .UpdateSeries(Arg.Is<SeriesDto>(series =>
+            .UpdateSeries(Arg.Is<Series>(series =>
                 series.Id == Guid.Parse("0197cce4-ac80-7c2d-9426-2d69ba7de348")
                 && series.ExternalId == "series-1-updated"));
         await seriesRepository
@@ -486,7 +486,7 @@ public class SeriesServiceTests
     {
         // Arrange
         var latestUpdatesUrl = "https://asu.ra";
-        var group = new ScanlationGroupDto()
+        var group = new ScanlationGroup()
         {
             Id = Guid.Parse("0197c07b-bbbb-777a-a143-71443604c4e6"),
             Name = ScanlationGroupName.AsuraScans,
@@ -495,7 +495,7 @@ public class SeriesServiceTests
             BaseCoverUrl = "https://gg.asu.ra",
         };
 
-        var savedSeries = new SeriesDto[]
+        var savedSeries = new Series[]
         {
             new()
             {
@@ -599,7 +599,7 @@ public class SeriesServiceTests
         // Assert
         seriesRepository
             .Received()
-            .UpdateSeries(Arg.Is<SeriesDto>(series =>
+            .UpdateSeries(Arg.Is<Series>(series =>
                 series.Id == Guid.Parse("0197d664-0053-79ed-80df-7f37057f890c")));
 
         await scraper
@@ -607,7 +607,7 @@ public class SeriesServiceTests
             .ScrapeSeriesAsync("https://asu.ra/series/series-2");
         seriesRepository
             .DidNotReceive()
-            .UpdateSeries(Arg.Is<SeriesDto>(series =>
+            .UpdateSeries(Arg.Is<Series>(series =>
                 series.Id == Guid.Parse("0197d664-0053-7cfb-ba4a-2f4f88eb6cad")));
 
         await scraper
@@ -624,7 +624,7 @@ public class SeriesServiceTests
     {
         // Arrange
         var latestUpdatesUrl = "https://asu.ra";
-        var group = new ScanlationGroupDto()
+        var group = new ScanlationGroup()
         {
             Id = Guid.Parse("0197c07b-bbbb-777a-a143-71443604c4e6"),
             Name = ScanlationGroupName.AsuraScans,

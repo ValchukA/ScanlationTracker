@@ -1,5 +1,5 @@
 ﻿using Microsoft.Playwright;
-using ScanlationTracker.Core.Scrapers.Dtos;
+using ScanlationTracker.Core.Scrapers.Contracts;
 
 namespace ScanlationTracker.Infrastructure.Scrapers;
 

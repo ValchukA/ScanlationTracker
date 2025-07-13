@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 using ScanlationTracker.Core.Scrapers;
-using ScanlationTracker.Core.Scrapers.Dtos;
+using ScanlationTracker.Core.Scrapers.Contracts;
 using ScanlationTracker.Infrastructure.Scrapers.BrowserContext;
 
 namespace ScanlationTracker.Infrastructure.Scrapers;

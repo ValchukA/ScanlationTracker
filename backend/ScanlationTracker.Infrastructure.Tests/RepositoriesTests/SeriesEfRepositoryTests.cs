@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ScanlationTracker.Core;
-using ScanlationTracker.Core.Repositories.Dtos;
+using ScanlationTracker.Core.Models;
 using ScanlationTracker.Infrastructure.Database;
 using ScanlationTracker.Infrastructure.Database.Entities;
 using ScanlationTracker.Infrastructure.Database.Repositories;
@@ -23,9 +23,9 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
         _seriesRepository = new SeriesEfRepository(_dbContext);
     }
 
-    public static IEnumerable<TheoryDataRow<ChapterDto, ChapterDto>> GetChaptersViolatingUniqueConstraint()
+    public static IEnumerable<TheoryDataRow<Chapter, Chapter>> GetChaptersViolatingUniqueConstraint()
     {
-        var firstChapter = new ChapterDto()
+        var firstChapter = new Chapter()
         {
             Id = Guid.Parse("0197eb79-24d6-7063-a73d-f4df3b320f68"),
             SeriesId = Guid.Parse("0197e6d9-8e74-7112-81fe-d6256a6c9fb1"),
@@ -35,7 +35,7 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
             AddedAt = new DateTimeOffset(2025, 7, 8, 0, 0, 0, default),
         };
 
-        yield return new TheoryDataRow<ChapterDto, ChapterDto>(
+        yield return new TheoryDataRow<Chapter, Chapter>(
             firstChapter,
             new()
             {
@@ -47,7 +47,7 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
                 AddedAt = new DateTimeOffset(2025, 7, 8, 0, 0, 0, default),
             });
 
-        yield return new TheoryDataRow<ChapterDto, ChapterDto>(
+        yield return new TheoryDataRow<Chapter, Chapter>(
             firstChapter,
             new()
             {
@@ -100,7 +100,7 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
         var groups = await _seriesRepository.GetAllGroupsAsync();
 
         // Assert
-        var expectedGroups = new ScanlationGroupDto[]
+        var expectedGroups = new ScanlationGroup[]
         {
             new()
             {
@@ -156,7 +156,7 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
             seriesToSeed.ExternalId);
 
         // Assert
-        var expectedSeries = new SeriesDto
+        var expectedSeries = new Series
         {
             Id = seriesToSeed.Id,
             ScanlationGroupId = seriesToSeed.ScanlationGroupId,
@@ -211,7 +211,7 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
             seriesToSeed.Title);
 
         // Assert
-        var expectedSeries = new SeriesDto
+        var expectedSeries = new Series
         {
             Id = seriesToSeed.Id,
             ScanlationGroupId = seriesToSeed.ScanlationGroupId,
@@ -296,7 +296,7 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
         var latestChapter = await _seriesRepository.GetLatestChapterAsync(seriesToSeed.Id);
 
         // Assert
-        var expectedLatestChapter = new ChapterDto
+        var expectedLatestChapter = new Chapter
         {
             Id = chaptersToSeed[0].Id,
             SeriesId = chaptersToSeed[0].SeriesId,
@@ -336,7 +336,7 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
         await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
         _dbContext.ChangeTracker.Clear();
 
-        var seriesToAdd = new SeriesDto()
+        var seriesToAdd = new Series()
         {
             Id = Guid.Parse("0197e6d9-8e74-7112-81fe-d6256a6c9fb1"),
             ScanlationGroupId = groupToSeed.Id,
@@ -385,7 +385,7 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
         await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
         _dbContext.ChangeTracker.Clear();
 
-        var seriesToAdd = new SeriesDto[]
+        var seriesToAdd = new Series[]
         {
             new()
             {
@@ -443,7 +443,7 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
         await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
         _dbContext.ChangeTracker.Clear();
 
-        var seriesToUpdate = new SeriesDto()
+        var seriesToUpdate = new Series()
         {
             Id = seriesToSeed.Id,
             ScanlationGroupId = seriesToSeed.ScanlationGroupId,
@@ -502,7 +502,7 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
         await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
         _dbContext.ChangeTracker.Clear();
 
-        var seriesToUpdate = new SeriesDto()
+        var seriesToUpdate = new Series()
         {
             Id = seriesToSeed.Id,
             ScanlationGroupId = seriesToSeed.ScanlationGroupId,
@@ -562,7 +562,7 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
         await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
         _dbContext.ChangeTracker.Clear();
 
-        var chapterToAdd = new ChapterDto()
+        var chapterToAdd = new Chapter()
         {
             Id = Guid.Parse("0197eb79-24d6-7063-a73d-f4df3b320f68"),
             SeriesId = seriesToSeed.Id,
@@ -599,8 +599,8 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
     [Theory]
     [MemberData(nameof(GetChaptersViolatingUniqueConstraint))]
     public async Task AddChapter_ThrowsException_WhenUniqueConstraintIsViolated(
-        ChapterDto firstChapter,
-        ChapterDto secondChapter)
+        Chapter firstChapter,
+        Chapter secondChapter)
     {
         // Arrange
         var groupToSeed = new ScanlationGroupEntity()

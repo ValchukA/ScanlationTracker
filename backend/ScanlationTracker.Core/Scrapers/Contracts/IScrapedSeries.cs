@@ -1,4 +1,4 @@
-﻿namespace ScanlationTracker.Core.Scrapers.Dtos;
+﻿namespace ScanlationTracker.Core.Scrapers.Contracts;
 
 public interface IScrapedSeries : IAsyncDisposable
 {
