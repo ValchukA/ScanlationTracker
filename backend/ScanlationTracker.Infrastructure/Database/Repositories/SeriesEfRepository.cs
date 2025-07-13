@@ -12,9 +12,9 @@ internal class SeriesEfRepository : ISeriesRepository
 
     public async Task<ScanlationGroup[]> GetAllGroupsAsync()
     {
-        var groupEntitties = await _dbContext.ScanlationGroups.AsNoTracking().ToArrayAsync();
+        var groupEntities = await _dbContext.ScanlationGroups.AsNoTracking().ToArrayAsync();
 
-        return [.. groupEntitties.Select(group => group.ToModel())];
+        return [.. groupEntities.Select(group => group.ToModel())];
     }
 
     public async Task<Series?> GetSeriesByExternalIdAsync(Guid groupId, string seriesExternalId)
