@@ -15,13 +15,10 @@ internal class CoreMetrics
 
         _addedSeriesCounter = meter.CreateCounter<int>($"{seriesUpdatePrefix}.series_added");
         _addedChaptersCounter = meter.CreateCounter<int>($"{seriesUpdatePrefix}.chapters_added");
-        _seriesUpdateDurationHistogram = meter.CreateHistogram(
+        _seriesUpdateDurationHistogram = meter.CreateHistogram<double>(
             $"{seriesUpdatePrefix}.duration",
             "s",
-            advice: new InstrumentAdvice<double>
-            {
-                HistogramBucketBoundaries = [5, 15, 60, 300, 600],
-            });
+            advice: new() { HistogramBucketBoundaries = [5, 15, 60, 300, 600] });
     }
 
     public static string MeterName { get; } = typeof(CoreMetrics).Assembly.GetName().Name!;
