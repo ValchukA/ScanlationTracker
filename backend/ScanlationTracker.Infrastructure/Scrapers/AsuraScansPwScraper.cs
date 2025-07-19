@@ -31,6 +31,7 @@ internal class AsuraScansPwScraper : IScanlationScraper
         {
             var scrapedSeriesUrls = new HashSet<string>();
 
+            await DisablePopupAsync(page);
             await page.GotoAsync(_latestUpdatesUrl);
 
             while (true)
@@ -84,6 +85,10 @@ internal class AsuraScansPwScraper : IScanlationScraper
             LatestChaptersAsync = ScrapeChaptersAsync(page),
         };
     }
+
+    private static async Task DisablePopupAsync(IPage page)
+        => await page.AddInitScriptAsync(
+            "localStorage.setItem('asuraPremiumTrialClosedG', new Date(9999, 11, 31).getTime())");
 
     private async IAsyncEnumerable<string> ScrapeSeriesUrlsFromPageAsync(
         IPage page,
