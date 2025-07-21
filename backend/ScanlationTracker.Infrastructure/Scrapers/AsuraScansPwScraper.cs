@@ -31,7 +31,6 @@ internal class AsuraScansPwScraper : IScanlationScraper
         {
             var scrapedSeriesUrls = new HashSet<string>();
 
-            await DisablePopupAsync(page);
             await page.GotoAsync(_latestUpdatesUrl);
 
             while (true)
@@ -45,8 +44,9 @@ internal class AsuraScansPwScraper : IScanlationScraper
                     yield return seriesUrl;
                 }
 
-                var nextButtonLocator = page.Locator("a:has-text('Next')");
-                var nextPageExists = await nextButtonLocator.GetAttributeAsync("href") != "#";
+                var nextPageUrl = await page
+                    .Locator("a:has-text('Next')").EvaluateAsync<string>("a => a.href");
+                var nextPageExists = !nextPageUrl.EndsWith('#');
 
                 if (!nextPageExists)
                 {
@@ -55,8 +55,7 @@ internal class AsuraScansPwScraper : IScanlationScraper
                     yield break;
                 }
 
-                await nextButtonLocator.ClickAsync();
-                await page.WaitForLoadStateAsync();
+                await page.GotoAsync(nextPageUrl);
             }
         }
         finally
@@ -85,10 +84,6 @@ internal class AsuraScansPwScraper : IScanlationScraper
             LatestChaptersAsync = ScrapeChaptersAsync(page),
         };
     }
-
-    private static async Task DisablePopupAsync(IPage page)
-        => await page.AddInitScriptAsync(
-            "localStorage.setItem('asuraPremiumTrialClosedG', new Date(9999, 11, 31).getTime())");
 
     private async IAsyncEnumerable<string> ScrapeSeriesUrlsFromPageAsync(
         IPage page,
