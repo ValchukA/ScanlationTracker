@@ -191,46 +191,58 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
             BaseCoverUrl = "https://gg.asu.ra",
         };
 
-        var seriesToSeed = new SeriesEntity()
+        var seriesToSeed = new SeriesEntity[]
         {
-            Id = Guid.Parse("0197e6d9-8e74-7112-81fe-d6256a6c9fb1"),
-            ScanlationGroupId = groupToSeed.Id,
-            ExternalId = "series-1",
-            Title = "Series 1",
-            RelativeCoverUrl = "/series-1.webp",
+            new()
+            {
+                Id = Guid.Parse("0197e6d9-8e74-7112-81fe-d6256a6c9fb1"),
+                ScanlationGroupId = groupToSeed.Id,
+                ExternalId = "series-2",
+                Title = "Series",
+                RelativeCoverUrl = "/series-2.webp",
+            },
+            new()
+            {
+                Id = Guid.Parse("0197ebbb-682b-7a08-aa52-cad3d0a9294e"),
+                ScanlationGroupId = groupToSeed.Id,
+                ExternalId = "series-1",
+                Title = "Series",
+                RelativeCoverUrl = "/series-1.webp",
+            },
         };
 
         _dbContext.ScanlationGroups.Add(groupToSeed);
-        _dbContext.Series.Add(seriesToSeed);
+        _dbContext.Series.AddRange(seriesToSeed);
         await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
         _dbContext.ChangeTracker.Clear();
 
         // Act
         var series = await _seriesRepository.GetSeriesByTitleAsync(
             groupToSeed.Id,
-            seriesToSeed.Title);
+            seriesToSeed[0].Title);
 
         // Assert
-        var expectedSeries = new Series
+        var expectedSeries = new Series[]
         {
-            Id = seriesToSeed.Id,
-            ScanlationGroupId = seriesToSeed.ScanlationGroupId,
-            ExternalId = seriesToSeed.ExternalId,
-            Title = seriesToSeed.Title,
-            RelativeCoverUrl = seriesToSeed.RelativeCoverUrl,
+            new()
+            {
+                Id = seriesToSeed[0].Id,
+                ScanlationGroupId = seriesToSeed[0].ScanlationGroupId,
+                ExternalId = seriesToSeed[0].ExternalId,
+                Title = seriesToSeed[0].Title,
+                RelativeCoverUrl = seriesToSeed[0].RelativeCoverUrl,
+            },
+            new()
+            {
+                Id = seriesToSeed[1].Id,
+                ScanlationGroupId = seriesToSeed[1].ScanlationGroupId,
+                ExternalId = seriesToSeed[1].ExternalId,
+                Title = seriesToSeed[1].Title,
+                RelativeCoverUrl = seriesToSeed[1].RelativeCoverUrl,
+            },
         };
 
         Assert.Equal(expectedSeries, series);
-    }
-
-    [Fact]
-    public async Task GetSeriesByTitleAsync_ReturnsNull_WhenNotFound()
-    {
-        // Act
-        var series = await _seriesRepository.GetSeriesByTitleAsync(Guid.Empty, string.Empty);
-
-        // Assert
-        Assert.Null(series);
     }
 
     [Fact]

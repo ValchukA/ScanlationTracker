@@ -27,14 +27,14 @@ internal class SeriesEfRepository : ISeriesRepository
         return seriesEntity?.ToModel();
     }
 
-    public async Task<Series?> GetSeriesByTitleAsync(Guid groupId, string seriesTitle)
+    public async Task<Series[]> GetSeriesByTitleAsync(Guid groupId, string seriesTitle)
     {
-        var seriesEntity = await _dbContext.Series
+        var seriesEntities = await _dbContext.Series
             .AsNoTracking()
-            .FirstOrDefaultAsync(series => series.ScanlationGroupId == groupId
-                && series.Title == seriesTitle);
+            .Where(series => series.ScanlationGroupId == groupId && series.Title == seriesTitle)
+            .ToArrayAsync();
 
-        return seriesEntity?.ToModel();
+        return [.. seriesEntities.Select(series => series.ToModel())];
     }
 
     public async Task<Chapter?> GetLatestChapterAsync(Guid seriesId)

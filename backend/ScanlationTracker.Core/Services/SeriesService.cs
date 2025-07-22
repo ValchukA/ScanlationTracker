@@ -71,8 +71,19 @@ internal class SeriesService : ISeriesService
 
         if (savedSeries is null && group.Name == ScanlationGroupName.AsuraScans)
         {
-            var normalizedTitle = NormalizeWhitespaces(scrapedSeries.Title);
-            savedSeries = await seriesRepository.GetSeriesByTitleAsync(group.Id, normalizedTitle);
+            var seriesByTitle = await seriesRepository.GetSeriesByTitleAsync(
+                group.Id,
+                NormalizeWhitespaces(scrapedSeries.Title));
+
+            if (seriesByTitle.Length > 1)
+            {
+                throw new InvalidOperationException("Found multiple series with the same title");
+            }
+
+            if (seriesByTitle.Length == 1)
+            {
+                savedSeries = seriesByTitle[0];
+            }
         }
 
         return savedSeries;
@@ -86,7 +97,6 @@ internal class SeriesService : ISeriesService
             group.BaseWebsiteUrl,
             group.BaseCoverUrl);
         var scraper = _scraperFactory.CreateScraper(group.Name, urlManager.LatestUpdatesUrl);
-        var idChangeLogged = false;
 
         await foreach (var seriesUrl in scraper.ScrapeUrlsOfLatestUpdatedSeriesAsync())
         {
@@ -97,14 +107,6 @@ internal class SeriesService : ISeriesService
                 scrapedSeries,
                 group,
                 seriesExternalId);
-
-            if (savedSeries is not null && seriesExternalId != savedSeries.ExternalId
-                && !idChangeLogged)
-            {
-                _logger.LogWarning("Detected changes in external Ids");
-
-                idChangeLogged = true;
-            }
 
             if (savedSeries is null)
             {

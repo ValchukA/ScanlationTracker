@@ -435,7 +435,7 @@ public class SeriesServiceTests
             .Returns([group]);
         seriesRepository
             .GetSeriesByTitleAsync(group.Id, savedSeries.Title)
-            .Returns(savedSeries);
+            .Returns([savedSeries]);
 
         _seriesRepositoryFactory
             .CreateRepository()
@@ -478,6 +478,94 @@ public class SeriesServiceTests
                 && series.ExternalId == "series-1-updated"));
         await seriesRepository
             .Received()
+            .SaveChangesAsync();
+    }
+
+    [Fact]
+    public async Task UpdateSeriesAsync_Aborts_WhenMultipleSeriesFoundByTitle()
+    {
+        // Arrange
+        var latestUpdatesUrl = "https://asu.ra";
+        var group = new ScanlationGroup()
+        {
+            Id = Guid.Parse("0197c07b-bbbb-777a-a143-71443604c4e6"),
+            Name = ScanlationGroupName.AsuraScans,
+            PublicName = ScanlationGroupName.AsuraScans.ToString(),
+            BaseWebsiteUrl = "https://asu.ra",
+            BaseCoverUrl = "https://gg.asu.ra",
+        };
+
+        var savedSeries = new Series[]
+        {
+            new()
+            {
+                Id = Guid.Parse("0197d664-0053-7cfb-ba4a-2f4f88eb6cad"),
+                ScanlationGroupId = group.Id,
+                ExternalId = "series-2",
+                Title = "Series",
+                RelativeCoverUrl = "/series-2.webp",
+            },
+            new()
+            {
+                Id = Guid.Parse("0197cce4-ac80-7c2d-9426-2d69ba7de348"),
+                ScanlationGroupId = group.Id,
+                ExternalId = "series-1",
+                Title = "Series",
+                RelativeCoverUrl = "/series-1.webp",
+            },
+        };
+
+        var scrapedSeriesData = new
+        {
+            Url = "https://asu.ra/series/series-1-updated",
+            Title = "Series",
+        };
+
+        var seriesRepository = Substitute.For<ISeriesRepository>();
+        var urlManager = Substitute.For<IUrlManager>();
+        var scrapedSeries = Substitute.For<IScrapedSeries>();
+        var scraper = Substitute.For<IScanlationScraper>();
+
+        seriesRepository
+            .GetAllGroupsAsync()
+            .Returns([group]);
+        seriesRepository
+            .GetSeriesByTitleAsync(group.Id, savedSeries[0].Title)
+            .Returns(savedSeries);
+
+        _seriesRepositoryFactory
+            .CreateRepository()
+            .Returns(seriesRepository);
+
+        urlManager
+            .LatestUpdatesUrl
+            .Returns(latestUpdatesUrl);
+
+        _urlManagerFactory
+            .CreateUrlManager(group.Name, group.BaseWebsiteUrl, group.BaseCoverUrl)
+            .Returns(urlManager);
+
+        scrapedSeries
+            .Title
+            .Returns(scrapedSeriesData.Title);
+
+        scraper
+            .ScrapeUrlsOfLatestUpdatedSeriesAsync()
+            .Returns(ToAsync([scrapedSeriesData.Url]));
+        scraper
+            .ScrapeSeriesAsync(scrapedSeriesData.Url)
+            .Returns(scrapedSeries);
+
+        _scraperFactory
+            .CreateScraper(group.Name, latestUpdatesUrl)
+            .Returns(scraper);
+
+        // Act
+        await _seriesService.UpdateSeriesAsync();
+
+        // Assert
+        await seriesRepository
+            .DidNotReceive()
             .SaveChangesAsync();
     }
 
