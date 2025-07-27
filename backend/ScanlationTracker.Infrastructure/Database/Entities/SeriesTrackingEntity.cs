@@ -7,9 +7,9 @@ public class SeriesTrackingEntity
 {
     public required Guid Id { get; init; }
 
-    public required Guid SeriesId { get; init; }
+    public Guid SeriesId { get; init; }
 
-    public required Guid UserId { get; init; }
+    public Guid UserId { get; init; }
 
     public SeriesEntity? Series { get; init; }
 

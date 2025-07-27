@@ -5,9 +5,13 @@ WORKDIR /src
 
 COPY backend/Directory.Build.props .
 COPY backend/ScanlationTracker.Api/ScanlationTracker.Api.csproj ScanlationTracker.Api/
+COPY backend/ScanlationTracker.Core/ScanlationTracker.Core.csproj ScanlationTracker.Core/
+COPY backend/ScanlationTracker.Infrastructure/ScanlationTracker.Infrastructure.csproj ScanlationTracker.Infrastructure/
 RUN dotnet restore ScanlationTracker.Api/ScanlationTracker.Api.csproj
 
 COPY backend/ScanlationTracker.Api ScanlationTracker.Api
+COPY backend/ScanlationTracker.Core ScanlationTracker.Core
+COPY backend/ScanlationTracker.Infrastructure ScanlationTracker.Infrastructure
 RUN dotnet publish ScanlationTracker.Api \
     --no-restore \
     -c release \

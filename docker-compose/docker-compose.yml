@@ -8,6 +8,7 @@ services:
         condition: service_completed_successfully
     environment:
       DOTNET_ENVIRONMENT: Development
+      PostgreSql__ConnectionString: Host=postgresql;Username=postgres;Password=Passw0rd!;Database=ScanlationTrackerDb
     ports:
       - 8080:8080
 

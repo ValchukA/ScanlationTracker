@@ -1,6 +1,6 @@
 ﻿namespace ScanlationTracker.Core.Models;
 
-public record Chapter
+public class Chapter
 {
     public required Guid Id { get; init; }
 

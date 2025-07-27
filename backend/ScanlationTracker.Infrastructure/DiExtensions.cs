@@ -18,6 +18,7 @@ public static class DiExtensions
     public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddPostgreSql(configuration);
+        services.AddScoped<ISeriesRepository, SeriesEfRepository>();
         services.AddSingleton<ISeriesRepositoryFactory, SeriesEfRepositoryFactory>();
         services.AddSingleton<IPwBrowserContextHolder, PwBrowserContextHolder>();
         services.AddSingleton<IUrlManagerFactory, UrlManagerFactory>();

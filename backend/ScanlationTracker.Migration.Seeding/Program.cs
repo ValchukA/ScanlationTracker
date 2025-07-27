@@ -22,22 +22,20 @@ ScanlationDbContext GetDbContext()
 
 async Task SeedUsersAsync()
 {
-    var requiredUsernames = new[] { "andva" };
-    var existingUsernames = await dbContext.Users.Select(user => user.Username).ToHashSetAsync();
-
-    foreach (var requiredUsername in requiredUsernames)
+    var requiredUser = new UserEntity
     {
-        if (!existingUsernames.Contains(requiredUsername))
-        {
-            dbContext.Users.Add(new UserEntity
-            {
-                Id = Guid.CreateVersion7(),
-                Username = requiredUsername,
-            });
-        }
-    }
+        Id = Guid.Parse("01980e47-61e7-736d-b7d9-5c0a4121ad86"),
+        Username = "andva",
+    };
 
-    await dbContext.SaveChangesAsync();
+    var userExists = await dbContext.Users.AnyAsync(user => user.Id == requiredUser.Id);
+
+    if (!userExists)
+    {
+        dbContext.Users.Add(requiredUser);
+
+        await dbContext.SaveChangesAsync();
+    }
 }
 
 async Task SeedScanlationGroupsAsync()

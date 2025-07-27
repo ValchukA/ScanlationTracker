@@ -1,6 +1,6 @@
 ﻿namespace ScanlationTracker.Core.Models;
 
-public record ScanlationGroup
+public class ScanlationGroup
 {
     public required Guid Id { get; init; }
 

@@ -1,20 +1,20 @@
 using Microsoft.Extensions.Options;
-using ScanlationTracker.Core.Services;
+using ScanlationTracker.Core.Services.Interfaces;
 
 namespace ScanlationTracker.SeriesUpdater;
 
 internal class SeriesUpdaterWorker : BackgroundService
 {
-    private readonly ISeriesService _seriesService;
+    private readonly ISeriesUpdaterService _seriesUpdaterService;
     private readonly PeriodicTimer _timer;
     private readonly ILogger<SeriesUpdaterWorker> _logger;
 
     public SeriesUpdaterWorker(
-        ISeriesService seriesService,
+        ISeriesUpdaterService seriesUpdaterService,
         IOptionsMonitor<SeriesUpdaterSettings> settings,
         ILogger<SeriesUpdaterWorker> logger)
     {
-        _seriesService = seriesService;
+        _seriesUpdaterService = seriesUpdaterService;
         _timer = new PeriodicTimer(GetPeriod());
         _logger = logger;
 
@@ -34,7 +34,7 @@ internal class SeriesUpdaterWorker : BackgroundService
     {
         do
         {
-            await _seriesService.UpdateSeriesAsync();
+            await _seriesUpdaterService.UpdateSeriesAsync();
         }
         while (await _timer.WaitForNextTickAsync(stoppingToken));
     }

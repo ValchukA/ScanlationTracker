@@ -44,6 +44,13 @@ internal static class MappingExtensions
         AddedAt = entity.AddedAt,
     };
 
+    public static SeriesTracking ToModel(this SeriesTrackingEntity entity) => new()
+    {
+        Id = entity.Id,
+        SeriesId = entity.SeriesId,
+        UserId = entity.UserId,
+    };
+
     public static SeriesEntity ToEntity(this Series model) => new()
     {
         Id = model.Id,
@@ -61,5 +68,12 @@ internal static class MappingExtensions
         Title = model.Title,
         Number = model.Number,
         AddedAt = model.AddedAt,
+    };
+
+    public static SeriesTrackingEntity ToEntity(this SeriesTracking model) => new()
+    {
+        Id = model.Id,
+        SeriesId = model.SeriesId,
+        UserId = model.UserId,
     };
 }

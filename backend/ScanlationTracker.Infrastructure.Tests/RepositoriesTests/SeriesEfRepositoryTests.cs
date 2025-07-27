@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ScanlationTracker.Core;
 using ScanlationTracker.Core.Models;
+using ScanlationTracker.Core.Repositories.Exceptions;
 using ScanlationTracker.Infrastructure.Database;
 using ScanlationTracker.Infrastructure.Database.Entities;
 using ScanlationTracker.Infrastructure.Database.Repositories;
@@ -21,43 +22,6 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
 
         _dbContext = new ScanlationDbContext(dbContextOptions);
         _seriesRepository = new SeriesEfRepository(_dbContext);
-    }
-
-    public static IEnumerable<TheoryDataRow<Chapter, Chapter>> GetChaptersViolatingUniqueConstraint()
-    {
-        var firstChapter = new Chapter()
-        {
-            Id = Guid.Parse("0197eb79-24d6-7063-a73d-f4df3b320f68"),
-            SeriesId = Guid.Parse("0197e6d9-8e74-7112-81fe-d6256a6c9fb1"),
-            ExternalId = "1",
-            Title = "Chapter 1",
-            Number = 1,
-            AddedAt = new DateTimeOffset(2025, 7, 8, 0, 0, 0, default),
-        };
-
-        yield return new TheoryDataRow<Chapter, Chapter>(
-            firstChapter,
-            new()
-            {
-                Id = Guid.Parse("0197eb79-24d6-742e-8696-fa6536a119af"),
-                SeriesId = Guid.Parse("0197e6d9-8e74-7112-81fe-d6256a6c9fb1"),
-                ExternalId = "1",
-                Title = "Chapter 2",
-                Number = 2,
-                AddedAt = new DateTimeOffset(2025, 7, 8, 0, 0, 0, default),
-            });
-
-        yield return new TheoryDataRow<Chapter, Chapter>(
-            firstChapter,
-            new()
-            {
-                Id = Guid.Parse("0197eb79-24d6-742e-8696-fa6536a119af"),
-                SeriesId = Guid.Parse("0197e6d9-8e74-7112-81fe-d6256a6c9fb1"),
-                ExternalId = "2",
-                Title = "Chapter 2",
-                Number = 1,
-                AddedAt = new DateTimeOffset(2025, 7, 8, 0, 0, 0, default),
-            });
     }
 
     public async ValueTask InitializeAsync() => await _dbContext.Database.MigrateAsync();
@@ -120,7 +84,7 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
             },
         };
 
-        Assert.Equal(expectedGroups, groups);
+        Assert.Equivalent(expectedGroups, groups, true);
     }
 
     [Fact]
@@ -165,7 +129,7 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
             RelativeCoverUrl = seriesToSeed.RelativeCoverUrl,
         };
 
-        Assert.Equal(expectedSeries, series);
+        Assert.Equivalent(expectedSeries, series, true);
     }
 
     [Fact]
@@ -242,7 +206,7 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
             },
         };
 
-        Assert.Equal(expectedSeries, series);
+        Assert.Equivalent(expectedSeries, series, true);
     }
 
     [Fact]
@@ -318,7 +282,7 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
             AddedAt = chaptersToSeed[0].AddedAt,
         };
 
-        Assert.Equal(expectedLatestChapter, latestChapter);
+        Assert.Equivalent(expectedLatestChapter, latestChapter, true);
     }
 
     [Fact]
@@ -329,6 +293,72 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
 
         // Assert
         Assert.Null(latestChapter);
+    }
+
+    [Fact]
+    public async Task GetTrackingAsync_ReturnsTracking()
+    {
+        // Arrange
+        var groupToSeed = new ScanlationGroupEntity()
+        {
+            Id = Guid.Parse("0197e151-db58-7431-8844-ba45db8d16de"),
+            Name = GroupNameConstants.AsuraScans,
+            PublicName = "Asura Scans",
+            BaseWebsiteUrl = "https://asu.ra",
+            BaseCoverUrl = "https://gg.asu.ra",
+        };
+
+        var seriesToSeed = new SeriesEntity()
+        {
+            Id = Guid.Parse("0197e6d9-8e74-7112-81fe-d6256a6c9fb1"),
+            ScanlationGroupId = groupToSeed.Id,
+            ExternalId = "series-1",
+            Title = "Series 1",
+            RelativeCoverUrl = "/series-1.webp",
+        };
+
+        var userToSeed = new UserEntity
+        {
+            Id = Guid.Parse("01980e47-61e7-736d-b7d9-5c0a4121ad86"),
+            Username = "andva",
+        };
+
+        var trackingToSeed = new SeriesTrackingEntity
+        {
+            Id = Guid.Parse("019842a1-5a7a-7feb-944b-59ee7f4c7222"),
+            SeriesId = seriesToSeed.Id,
+            UserId = userToSeed.Id,
+        };
+
+        _dbContext.ScanlationGroups.Add(groupToSeed);
+        _dbContext.Series.Add(seriesToSeed);
+        _dbContext.Users.Add(userToSeed);
+        _dbContext.SeriesTrackings.Add(trackingToSeed);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _dbContext.ChangeTracker.Clear();
+
+        // Act
+        var tracking = await _seriesRepository.GetTrackingAsync(trackingToSeed.Id);
+
+        // Assert
+        var expectedTracking = new SeriesTracking
+        {
+            Id = trackingToSeed.Id,
+            SeriesId = trackingToSeed.SeriesId,
+            UserId = trackingToSeed.UserId,
+        };
+
+        Assert.Equivalent(expectedTracking, tracking, true);
+    }
+
+    [Fact]
+    public async Task GetTrackingAsync_ReturnsNull_WhenNotFound()
+    {
+        // Act
+        var tracking = await _seriesRepository.GetTrackingAsync(Guid.Empty);
+
+        // Assert
+        Assert.Null(tracking);
     }
 
     [Fact]
@@ -378,173 +408,6 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
         };
 
         Assert.Equivalent(expectedAddedSeries, addedSeries, true);
-    }
-
-    [Fact]
-    public async Task AddSeries_ThrowsException_WhenUniqueConstraintIsViolated()
-    {
-        // Arrange
-        var groupToSeed = new ScanlationGroupEntity()
-        {
-            Id = Guid.Parse("0197e151-db58-7431-8844-ba45db8d16de"),
-            Name = GroupNameConstants.AsuraScans,
-            PublicName = "Asura Scans",
-            BaseWebsiteUrl = "https://asu.ra",
-            BaseCoverUrl = "https://gg.asu.ra",
-        };
-
-        _dbContext.ScanlationGroups.Add(groupToSeed);
-        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
-        _dbContext.ChangeTracker.Clear();
-
-        var seriesToAdd = new Series[]
-        {
-            new()
-            {
-                Id = Guid.Parse("0197e6d9-8e74-7112-81fe-d6256a6c9fb1"),
-                ScanlationGroupId = groupToSeed.Id,
-                ExternalId = "series-1",
-                Title = "Series 2",
-                RelativeCoverUrl = "/series-2.webp",
-            },
-            new()
-            {
-                Id = Guid.Parse("0197ebbb-682b-7a08-aa52-cad3d0a9294e"),
-                ScanlationGroupId = groupToSeed.Id,
-                ExternalId = "series-1",
-                Title = "Series 1",
-                RelativeCoverUrl = "/series-1.webp",
-            },
-        };
-
-        // Act
-        _seriesRepository.AddSeries(seriesToAdd[1]);
-        _seriesRepository.AddSeries(seriesToAdd[0]);
-        var exception = await Record.ExceptionAsync(_seriesRepository.SaveChangesAsync);
-
-        // Assert
-        Assert.Contains(
-            "duplicate key value violates unique constraint",
-            exception?.InnerException?.Message);
-    }
-
-    [Fact]
-    public async Task UpdateSeries_UpdatesSeries_WhenNotTracked()
-    {
-        // Arrange
-        var groupToSeed = new ScanlationGroupEntity()
-        {
-            Id = Guid.Parse("0197e151-db58-7431-8844-ba45db8d16de"),
-            Name = GroupNameConstants.AsuraScans,
-            PublicName = "Asura Scans",
-            BaseWebsiteUrl = "https://asu.ra",
-            BaseCoverUrl = "https://gg.asu.ra",
-        };
-
-        var seriesToSeed = new SeriesEntity()
-        {
-            Id = Guid.Parse("0197e6d9-8e74-7112-81fe-d6256a6c9fb1"),
-            ScanlationGroupId = groupToSeed.Id,
-            ExternalId = "series-1",
-            Title = "Series 1",
-            RelativeCoverUrl = "/series-1.webp",
-        };
-
-        _dbContext.ScanlationGroups.Add(groupToSeed);
-        _dbContext.Series.Add(seriesToSeed);
-        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
-        _dbContext.ChangeTracker.Clear();
-
-        var seriesToUpdate = new Series()
-        {
-            Id = seriesToSeed.Id,
-            ScanlationGroupId = seriesToSeed.ScanlationGroupId,
-            ExternalId = "series-1-updated",
-            Title = "Series 1 Updated",
-            RelativeCoverUrl = "/series-1-updated.webp",
-        };
-
-        // Act
-        _seriesRepository.UpdateSeries(seriesToUpdate);
-        await _seriesRepository.SaveChangesAsync();
-
-        // Assert
-        _dbContext.ChangeTracker.Clear();
-
-        var updatedSeries = await _dbContext.Series.FirstAsync(
-            series => series.Id == seriesToUpdate.Id,
-            TestContext.Current.CancellationToken);
-
-        var expectedUpdatedSeries = new SeriesEntity
-        {
-            Id = seriesToUpdate.Id,
-            ScanlationGroupId = seriesToUpdate.ScanlationGroupId,
-            ExternalId = seriesToUpdate.ExternalId,
-            Title = seriesToUpdate.Title,
-            RelativeCoverUrl = seriesToUpdate.RelativeCoverUrl,
-        };
-
-        Assert.Equivalent(expectedUpdatedSeries, updatedSeries, true);
-    }
-
-    [Fact]
-    public async Task UpdateSeries_UpdatesSeries_WhenTracked()
-    {
-        // Arrange
-        var groupToSeed = new ScanlationGroupEntity()
-        {
-            Id = Guid.Parse("0197e151-db58-7431-8844-ba45db8d16de"),
-            Name = GroupNameConstants.AsuraScans,
-            PublicName = "Asura Scans",
-            BaseWebsiteUrl = "https://asu.ra",
-            BaseCoverUrl = "https://gg.asu.ra",
-        };
-
-        var seriesToSeed = new SeriesEntity()
-        {
-            Id = Guid.Parse("0197e6d9-8e74-7112-81fe-d6256a6c9fb1"),
-            ScanlationGroupId = groupToSeed.Id,
-            ExternalId = "series-1",
-            Title = "Series 1",
-            RelativeCoverUrl = "/series-1.webp",
-        };
-
-        _dbContext.ScanlationGroups.Add(groupToSeed);
-        _dbContext.Series.Add(seriesToSeed);
-        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
-        _dbContext.ChangeTracker.Clear();
-
-        var seriesToUpdate = new Series()
-        {
-            Id = seriesToSeed.Id,
-            ScanlationGroupId = seriesToSeed.ScanlationGroupId,
-            ExternalId = "series-1-updated",
-            Title = "Series 1 Updated",
-            RelativeCoverUrl = "/series-1-updated.webp",
-        };
-
-        // Act
-        _seriesRepository.UpdateSeries(seriesToUpdate with { Title = "Updated" });
-        _seriesRepository.UpdateSeries(seriesToUpdate);
-        await _seriesRepository.SaveChangesAsync();
-
-        // Assert
-        _dbContext.ChangeTracker.Clear();
-
-        var updatedSeries = await _dbContext.Series.FirstAsync(
-            series => series.Id == seriesToUpdate.Id,
-            TestContext.Current.CancellationToken);
-
-        var expectedUpdatedSeries = new SeriesEntity
-        {
-            Id = seriesToUpdate.Id,
-            ScanlationGroupId = seriesToUpdate.ScanlationGroupId,
-            ExternalId = seriesToUpdate.ExternalId,
-            Title = seriesToUpdate.Title,
-            RelativeCoverUrl = seriesToUpdate.RelativeCoverUrl,
-        };
-
-        Assert.Equivalent(expectedUpdatedSeries, updatedSeries, true);
     }
 
     [Fact]
@@ -608,11 +471,70 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
         Assert.Equivalent(expectedAddedChapter, addedChapter, true);
     }
 
-    [Theory]
-    [MemberData(nameof(GetChaptersViolatingUniqueConstraint))]
-    public async Task AddChapter_ThrowsException_WhenUniqueConstraintIsViolated(
-        Chapter firstChapter,
-        Chapter secondChapter)
+    [Fact]
+    public async Task AddTracking_AddsTracking()
+    {
+        // Arrange
+        var groupToSeed = new ScanlationGroupEntity()
+        {
+            Id = Guid.Parse("0197e151-db58-7431-8844-ba45db8d16de"),
+            Name = GroupNameConstants.AsuraScans,
+            PublicName = "Asura Scans",
+            BaseWebsiteUrl = "https://asu.ra",
+            BaseCoverUrl = "https://gg.asu.ra",
+        };
+
+        var seriesToSeed = new SeriesEntity()
+        {
+            Id = Guid.Parse("0197e6d9-8e74-7112-81fe-d6256a6c9fb1"),
+            ScanlationGroupId = groupToSeed.Id,
+            ExternalId = "series-1",
+            Title = "Series 1",
+            RelativeCoverUrl = "/series-1.webp",
+        };
+
+        var userToSeed = new UserEntity
+        {
+            Id = Guid.Parse("01980e47-61e7-736d-b7d9-5c0a4121ad86"),
+            Username = "andva",
+        };
+
+        _dbContext.ScanlationGroups.Add(groupToSeed);
+        _dbContext.Series.Add(seriesToSeed);
+        _dbContext.Users.Add(userToSeed);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _dbContext.ChangeTracker.Clear();
+
+        var trackingToAdd = new SeriesTracking
+        {
+            Id = Guid.Parse("019842a1-5a7a-7feb-944b-59ee7f4c7222"),
+            SeriesId = seriesToSeed.Id,
+            UserId = userToSeed.Id,
+        };
+
+        // Act
+        _seriesRepository.AddTracking(trackingToAdd);
+        await _seriesRepository.SaveChangesAsync();
+
+        // Assert
+        _dbContext.ChangeTracker.Clear();
+
+        var addedTracking = await _dbContext.SeriesTrackings.FirstAsync(
+            tracking => tracking.Id == trackingToAdd.Id,
+            TestContext.Current.CancellationToken);
+
+        var expectedAddedTracking = new SeriesTrackingEntity()
+        {
+            Id = trackingToAdd.Id,
+            SeriesId = trackingToAdd.SeriesId,
+            UserId = trackingToAdd.UserId,
+        };
+
+        Assert.Equivalent(expectedAddedTracking, addedTracking, true);
+    }
+
+    [Fact]
+    public async Task UpdateSeries_UpdatesSeries()
     {
         // Arrange
         var groupToSeed = new ScanlationGroupEntity()
@@ -638,14 +560,192 @@ public sealed class SeriesEfRepositoryTests : IAsyncLifetime, IClassFixture<Post
         await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
         _dbContext.ChangeTracker.Clear();
 
+        var seriesToUpdate = new Series()
+        {
+            Id = seriesToSeed.Id,
+            ScanlationGroupId = seriesToSeed.ScanlationGroupId,
+            ExternalId = "series-1-updated",
+            Title = "Series 1 Updated",
+            RelativeCoverUrl = "/series-1-updated.webp",
+        };
+
         // Act
-        _seriesRepository.AddChapter(firstChapter);
-        _seriesRepository.AddChapter(secondChapter);
-        var exception = await Record.ExceptionAsync(_seriesRepository.SaveChangesAsync);
+        _seriesRepository.UpdateSeries(seriesToUpdate);
+        await _seriesRepository.SaveChangesAsync();
 
         // Assert
-        Assert.Contains(
-            "duplicate key value violates unique constraint",
-            exception?.InnerException?.Message);
+        _dbContext.ChangeTracker.Clear();
+
+        var updatedSeries = await _dbContext.Series.FirstAsync(
+            series => series.Id == seriesToUpdate.Id,
+            TestContext.Current.CancellationToken);
+
+        var expectedUpdatedSeries = new SeriesEntity
+        {
+            Id = seriesToUpdate.Id,
+            ScanlationGroupId = seriesToUpdate.ScanlationGroupId,
+            ExternalId = seriesToUpdate.ExternalId,
+            Title = seriesToUpdate.Title,
+            RelativeCoverUrl = seriesToUpdate.RelativeCoverUrl,
+        };
+
+        Assert.Equivalent(expectedUpdatedSeries, updatedSeries, true);
+    }
+
+    [Fact]
+    public async Task DeleteTracking_DeletesTracking()
+    {
+        // Arrange
+        var groupToSeed = new ScanlationGroupEntity()
+        {
+            Id = Guid.Parse("0197e151-db58-7431-8844-ba45db8d16de"),
+            Name = GroupNameConstants.AsuraScans,
+            PublicName = "Asura Scans",
+            BaseWebsiteUrl = "https://asu.ra",
+            BaseCoverUrl = "https://gg.asu.ra",
+        };
+
+        var seriesToSeed = new SeriesEntity()
+        {
+            Id = Guid.Parse("0197e6d9-8e74-7112-81fe-d6256a6c9fb1"),
+            ScanlationGroupId = groupToSeed.Id,
+            ExternalId = "series-1",
+            Title = "Series 1",
+            RelativeCoverUrl = "/series-1.webp",
+        };
+
+        var userToSeed = new UserEntity
+        {
+            Id = Guid.Parse("01980e47-61e7-736d-b7d9-5c0a4121ad86"),
+            Username = "andva",
+        };
+
+        var trackingToSeed = new SeriesTrackingEntity
+        {
+            Id = Guid.Parse("019842a1-5a7a-7feb-944b-59ee7f4c7222"),
+            SeriesId = seriesToSeed.Id,
+            UserId = userToSeed.Id,
+        };
+
+        _dbContext.ScanlationGroups.Add(groupToSeed);
+        _dbContext.Series.Add(seriesToSeed);
+        _dbContext.Users.Add(userToSeed);
+        _dbContext.SeriesTrackings.Add(trackingToSeed);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _dbContext.ChangeTracker.Clear();
+
+        // Act
+        _seriesRepository.DeleteTracking(trackingToSeed.Id);
+        await _seriesRepository.SaveChangesAsync();
+
+        // Assert
+        _dbContext.ChangeTracker.Clear();
+
+        var trackingExists = await _dbContext.SeriesTrackings.AnyAsync(
+            tracking => tracking.Id == trackingToSeed.Id,
+            TestContext.Current.CancellationToken);
+
+        Assert.False(trackingExists);
+    }
+
+    [Fact]
+    public async Task SaveChangesAsync_ReturnsAffectedRowsCount()
+    {
+        // Arrange
+        var groupToSeed = new ScanlationGroupEntity()
+        {
+            Id = Guid.Parse("0197e151-db58-7431-8844-ba45db8d16de"),
+            Name = GroupNameConstants.AsuraScans,
+            PublicName = "Asura Scans",
+            BaseWebsiteUrl = "https://asu.ra",
+            BaseCoverUrl = "https://gg.asu.ra",
+        };
+
+        _dbContext.ScanlationGroups.Add(groupToSeed);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _dbContext.ChangeTracker.Clear();
+
+        var seriesToAdd = new Series()
+        {
+            Id = Guid.Parse("0197e6d9-8e74-7112-81fe-d6256a6c9fb1"),
+            ScanlationGroupId = groupToSeed.Id,
+            ExternalId = "series-1",
+            Title = "Series 1",
+            RelativeCoverUrl = "/series-1.webp",
+        };
+
+        // Act
+        _seriesRepository.AddSeries(seriesToAdd);
+        var affectedRowsCount = await _seriesRepository.SaveChangesAsync();
+
+        // Assert
+        Assert.Equal(1, affectedRowsCount);
+    }
+
+    [Fact]
+    public async Task SaveChangesAsync_ThrowsUniqueConstraintException_WhenUniqueConstraintIsViolated()
+    {
+        // Arrange
+        var groupToSeed = new ScanlationGroupEntity()
+        {
+            Id = Guid.Parse("0197e151-db58-7431-8844-ba45db8d16de"),
+            Name = GroupNameConstants.AsuraScans,
+            PublicName = "Asura Scans",
+            BaseWebsiteUrl = "https://asu.ra",
+            BaseCoverUrl = "https://gg.asu.ra",
+        };
+
+        _dbContext.ScanlationGroups.Add(groupToSeed);
+        await _dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _dbContext.ChangeTracker.Clear();
+
+        var seriesToAdd = new Series[]
+        {
+            new()
+            {
+                Id = Guid.Parse("0197e6d9-8e74-7112-81fe-d6256a6c9fb1"),
+                ScanlationGroupId = groupToSeed.Id,
+                ExternalId = "series-1",
+                Title = "Series 2",
+                RelativeCoverUrl = "/series-2.webp",
+            },
+            new()
+            {
+                Id = Guid.Parse("0197ebbb-682b-7a08-aa52-cad3d0a9294e"),
+                ScanlationGroupId = groupToSeed.Id,
+                ExternalId = "series-1",
+                Title = "Series 1",
+                RelativeCoverUrl = "/series-1.webp",
+            },
+        };
+
+        // Act
+        _seriesRepository.AddSeries(seriesToAdd[1]);
+        _seriesRepository.AddSeries(seriesToAdd[0]);
+        var action = _seriesRepository.SaveChangesAsync;
+
+        // Assert
+        await Assert.ThrowsAsync<UniqueConstraintException>(action);
+    }
+
+    [Fact]
+    public async Task SaveChangesAsync_ThrowsForeignKeyConstraintException_WhenForeignKeyConstraintIsViolated()
+    {
+        // Arrange
+        var seriesToAdd = new Series
+        {
+            Id = Guid.Parse("0197ebbb-682b-7a08-aa52-cad3d0a9294e"),
+            ScanlationGroupId = Guid.Parse("0197e151-db58-7431-8844-ba45db8d16de"),
+            ExternalId = "series-1",
+            Title = "Series 1",
+            RelativeCoverUrl = "/series-1.webp",
+        };
+
+        // Act
+        _seriesRepository.AddSeries(seriesToAdd);
+        var action = _seriesRepository.SaveChangesAsync;
+
+        // Assert
+        await Assert.ThrowsAsync<ForeignKeyConstraintException>(action);
     }
 }

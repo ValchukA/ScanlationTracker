@@ -12,11 +12,17 @@ public interface ISeriesRepository
 
     public Task<Chapter?> GetLatestChapterAsync(Guid seriesId);
 
-    public void AddSeries(Series series);
+    public Task<SeriesTracking?> GetTrackingAsync(Guid trackingId);
 
-    public void UpdateSeries(Series series);
+    public void AddSeries(Series series);
 
     public void AddChapter(Chapter chapter);
 
-    public Task SaveChangesAsync();
+    public void AddTracking(SeriesTracking tracking);
+
+    public void UpdateSeries(Series series);
+
+    public void DeleteTracking(Guid trackingId);
+
+    public Task<int> SaveChangesAsync();
 }
