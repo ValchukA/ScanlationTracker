@@ -2,13 +2,15 @@
 
 namespace ScanlationTracker.Core.Metrics;
 
-internal class CoreMetrics
+internal class SeriesUpdaterMetrics
 {
+    public const string MeterName = "SeriesUpdater";
+
     private readonly Counter<int> _addedSeriesCounter;
     private readonly Counter<int> _addedChaptersCounter;
     private readonly Histogram<double> _seriesUpdateDurationHistogram;
 
-    public CoreMetrics(IMeterFactory meterFactory)
+    public SeriesUpdaterMetrics(IMeterFactory meterFactory)
     {
         var meter = meterFactory.Create(MeterName);
         var seriesUpdatePrefix = "scanlationtracker.series_update";
@@ -20,8 +22,6 @@ internal class CoreMetrics
             "s",
             advice: new() { HistogramBucketBoundaries = [5, 15, 60, 300, 600] });
     }
-
-    public static string MeterName { get; } = typeof(CoreMetrics).Assembly.GetName().Name!;
 
     public void IncrementAddedSeriesCounter(ScanlationGroupName groupName)
         => _addedSeriesCounter.Add(1, CreateGroupNameTag(groupName));

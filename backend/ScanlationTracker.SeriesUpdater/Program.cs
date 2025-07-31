@@ -21,7 +21,7 @@ builder.Services.AddOpenTelemetry()
     .ConfigureResource(resourceBuilder =>
         resourceBuilder.AddService(builder.Environment.ApplicationName))
     .UseOtlpExporter()
-    .WithMetrics(provideBuilder => provideBuilder.AddCoreMeter());
+    .WithMetrics(providerBuilder => providerBuilder.AddSeriesUpdaterMeter());
 
 builder.Services.AddOptions<SeriesUpdaterSettings>()
     .BindConfiguration(SeriesUpdaterSettings.SectionKey).ValidateDataAnnotations();

@@ -36,7 +36,7 @@ public class SeriesUpdaterServiceTests
             _urlManagerFactory,
             _scraperFactory,
             new NullLogger<SeriesUpdaterService>(),
-            new CoreMetrics(meterFactory));
+            new SeriesUpdaterMetrics(meterFactory));
     }
 
     [Fact]

@@ -1,3 +1,6 @@
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using Scalar.AspNetCore;
 using ScanlationTracker.Core;
 using ScanlationTracker.Infrastructure;
@@ -9,6 +12,18 @@ builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 builder.Services.AddCore();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Logging.AddOpenTelemetry(options =>
+{
+    options.IncludeFormattedMessage = true;
+    options.IncludeScopes = true;
+});
+
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resourceBuilder =>
+        resourceBuilder.AddService(builder.Environment.ApplicationName))
+    .UseOtlpExporter()
+    .WithMetrics(providerBuilder => providerBuilder.AddAspNetCoreInstrumentation());
 
 var app = builder.Build();
 

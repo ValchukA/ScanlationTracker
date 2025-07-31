@@ -16,20 +16,20 @@ internal class SeriesUpdaterService : ISeriesUpdaterService
     private readonly IUrlManagerFactory _urlManagerFactory;
     private readonly IScanlationScraperFactory _scraperFactory;
     private readonly ILogger<SeriesUpdaterService> _logger;
-    private readonly CoreMetrics _coreMetrics;
+    private readonly SeriesUpdaterMetrics _metrics;
 
     public SeriesUpdaterService(
         ISeriesRepositoryFactory seriesRepositoryFactory,
         IUrlManagerFactory urlManagerFactory,
         IScanlationScraperFactory scraperFactory,
         ILogger<SeriesUpdaterService> logger,
-        CoreMetrics coreMetrics)
+        SeriesUpdaterMetrics metrics)
     {
         _seriesRepositoryFactory = seriesRepositoryFactory;
         _urlManagerFactory = urlManagerFactory;
         _scraperFactory = scraperFactory;
         _logger = logger;
-        _coreMetrics = coreMetrics;
+        _metrics = metrics;
     }
 
     public async Task UpdateSeriesAsync()
@@ -53,7 +53,7 @@ internal class SeriesUpdaterService : ISeriesUpdaterService
         });
 
         var elapsed = stopwatch.Elapsed;
-        _coreMetrics.AddSeriesUpdateDuration(elapsed);
+        _metrics.AddSeriesUpdateDuration(elapsed);
         _logger.LogInformation("Series update took {ElapsedSeconds} s", elapsed.TotalSeconds);
     }
 
@@ -161,7 +161,7 @@ internal class SeriesUpdaterService : ISeriesUpdaterService
 
         seriesRepository.AddSeries(series);
 
-        _coreMetrics.IncrementAddedSeriesCounter(group.Name);
+        _metrics.IncrementAddedSeriesCounter(group.Name);
         _logger.LogInformation(
             "Added series with Id {SeriesId} and external Id {SeriesExternalId}",
             series.Id,
@@ -272,7 +272,7 @@ internal class SeriesUpdaterService : ISeriesUpdaterService
 
             seriesRepository.AddChapter(chapter);
 
-            _coreMetrics.IncrementAddedChaptersCounter(groupName);
+            _metrics.IncrementAddedChaptersCounter(groupName);
             _logger.LogInformation(
                 "Added chapter with Id {ChapterId} and external Id {ChapterExternalId} " +
                 "to series with Id {SeriesId} and external Id {SeriesExternalId}",

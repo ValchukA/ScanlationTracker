@@ -4,6 +4,6 @@ namespace ScanlationTracker.Core.Metrics;
 
 public static class MeterProviderBuilderExtensions
 {
-    public static void AddCoreMeter(this MeterProviderBuilder meterProviderBuilder)
-        => meterProviderBuilder.AddMeter(CoreMetrics.MeterName);
+    public static void AddSeriesUpdaterMeter(this MeterProviderBuilder meterProviderBuilder)
+        => meterProviderBuilder.AddMeter(SeriesUpdaterMetrics.MeterName);
 }

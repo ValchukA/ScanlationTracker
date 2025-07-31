@@ -11,6 +11,6 @@ public static class DiExtensions
     {
         services.AddScoped<ISeriesService, SeriesService>();
         services.AddSingleton<ISeriesUpdaterService, SeriesUpdaterService>();
-        services.AddSingleton<CoreMetrics>();
+        services.AddSingleton<SeriesUpdaterMetrics>();
     }
 }

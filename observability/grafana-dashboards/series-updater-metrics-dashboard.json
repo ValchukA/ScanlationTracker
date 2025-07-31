@@ -254,6 +254,16 @@
       },
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -265,7 +275,48 @@
           },
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "scanlation_group.name"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Scanlation group"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Count"
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 50
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 7,
@@ -275,21 +326,22 @@
       },
       "id": 4,
       "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
           "fields": "",
-          "values": false
+          "reducer": [
+            "sum"
+          ],
+          "show": false
         },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "Scanlation group"
+          }
+        ]
       },
       "pluginVersion": "12.0.1",
       "targets": [
@@ -299,14 +351,17 @@
             "uid": "Prometheus"
           },
           "editorMode": "code",
+          "exemplar": false,
           "expr": "sum by(\"scanlation_group.name\") (round(increase({\"scanlationtracker.series_update.series_added_total\"}[$__range])))",
+          "format": "table",
+          "instant": true,
           "legendFormat": "__auto",
-          "range": true,
+          "range": false,
           "refId": "A"
         }
       ],
       "title": "Added series count",
-      "type": "stat"
+      "type": "table"
     },
     {
       "datasource": {
@@ -315,6 +370,16 @@
       },
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -326,7 +391,48 @@
           },
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "scanlation_group.name"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Scanlation group"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Count"
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 50
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 7,
@@ -336,21 +442,22 @@
       },
       "id": 5,
       "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
           "fields": "",
-          "values": false
+          "reducer": [
+            "sum"
+          ],
+          "show": false
         },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "Scanlation group"
+          }
+        ]
       },
       "pluginVersion": "12.0.1",
       "targets": [
@@ -360,14 +467,17 @@
             "uid": "Prometheus"
           },
           "editorMode": "code",
+          "exemplar": false,
           "expr": "sum by(\"scanlation_group.name\") (round(increase({\"scanlationtracker.series_update.chapters_added_total\"}[$__range])))",
+          "format": "table",
+          "instant": true,
           "legendFormat": "__auto",
-          "range": true,
+          "range": false,
           "refId": "A"
         }
       ],
       "title": "Added chapters count",
-      "type": "stat"
+      "type": "table"
     },
     {
       "datasource": {
@@ -453,7 +563,7 @@
           },
           "editorMode": "code",
           "expr": "sum by(\"scanlation_group.name\") ({\"scanlationtracker.series_update.chapters_added_total\"})",
-          "legendFormat": "{{scanlation_group.name}}",
+          "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
