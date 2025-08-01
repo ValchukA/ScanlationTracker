@@ -141,7 +141,7 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "count by(severity_text) (count_over_time({service_name=\"ScanlationTracker.SeriesUpdater\"} | GroupName=~\"${scanlation_group:default:.*}\" $filter [$__range]))",
+          "expr": "count by(severity_text) (count_over_time({service_name=\"ScanlationTracker.SeriesUpdater\"} | GroupName=~\"$scanlation_group\" $filter [$__range]))",
           "legendFormat": "{{value}}",
           "queryType": "range",
           "refId": "A"
@@ -217,7 +217,7 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "count by(GroupName) (count_over_time({service_name=\"ScanlationTracker.SeriesUpdater\"} | GroupName!=\"\" | severity_text=~\"${severity:default:.*}\" $filter [$__range]))",
+          "expr": "count by(GroupName) (count_over_time({service_name=\"ScanlationTracker.SeriesUpdater\"} | GroupName!=\"\" | severity_text=~\"$severity\" $filter [$__range]))",
           "legendFormat": "{{value}}",
           "queryType": "range",
           "refId": "A"
@@ -310,7 +310,7 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "count(count_over_time({service_name=\"ScanlationTracker.SeriesUpdater\"} | severity_text=~\"${severity:default:.*}\" | GroupName=~\"${scanlation_group:default:.*}\" $filter [$__interval]))",
+          "expr": "count(count_over_time({service_name=\"ScanlationTracker.SeriesUpdater\"} | severity_text=~\"$severity\" | GroupName=~\"$scanlation_group\" $filter [$__interval]))",
           "legendFormat": "Volume",
           "queryType": "range",
           "refId": "A"
@@ -355,7 +355,7 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "{service_name=\"ScanlationTracker.SeriesUpdater\"} | severity_text=~\"${severity:default:.*}\" | GroupName=~\"${scanlation_group:default:.*}\" $filter",
+          "expr": "{service_name=\"ScanlationTracker.SeriesUpdater\"} | severity_text=~\"$severity\" | GroupName=~\"$scanlation_group\" $filter",
           "queryType": "range",
           "refId": "A"
         }

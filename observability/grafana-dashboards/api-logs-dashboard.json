@@ -141,7 +141,7 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "count by(severity_text) (count_over_time({service_name=\"ScanlationTracker.Api\"} $filter [$__range]))",
+          "expr": "count by(severity_text) (count_over_time({service_name=\"ScanlationTracker.Api\"} | severity_text=~\"\" $filter [$__range]))",
           "legendFormat": "{{value}}",
           "queryType": "range",
           "refId": "A"
@@ -234,7 +234,7 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "count(count_over_time({service_name=\"ScanlationTracker.Api\"} | severity_text=~\"${severity:default:.*}\" $filter [$__interval]))",
+          "expr": "count(count_over_time({service_name=\"ScanlationTracker.Api\"} | severity_text=~\"$severity\" $filter [$__interval]))",
           "legendFormat": "Volume",
           "queryType": "range",
           "refId": "A"
@@ -279,7 +279,7 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "{service_name=\"ScanlationTracker.Api\"} | severity_text=~\"${severity:default:.*}\" $filter",
+          "expr": "{service_name=\"ScanlationTracker.Api\"} | severity_text=~\"$severity\" $filter",
           "queryType": "range",
           "refId": "A"
         }
