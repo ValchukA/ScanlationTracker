@@ -11,12 +11,6 @@ builder.Services.AddHostedService<SeriesUpdaterWorker>();
 builder.Services.AddCore();
 builder.Services.AddInfrastructure(builder.Configuration);
 
-builder.Logging.AddOpenTelemetry(options =>
-{
-    options.IncludeFormattedMessage = true;
-    options.IncludeScopes = true;
-});
-
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resourceBuilder =>
         resourceBuilder.AddService(builder.Environment.ApplicationName))
