@@ -1,4 +1,4 @@
-name: Buid and push Docker image to GitHub Container Registry
+name: Build and push Docker image to GitHub Container Registry
 
 on:
   workflow_call:
