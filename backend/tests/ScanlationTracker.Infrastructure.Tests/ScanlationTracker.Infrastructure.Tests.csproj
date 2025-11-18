@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ScanlationTracker.Infrastructure\ScanlationTracker.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\ScanlationTracker.Infrastructure\ScanlationTracker.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

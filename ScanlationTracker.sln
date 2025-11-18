@@ -22,9 +22,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanlationTracker.Infrastru
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanlationTracker.Migration.Seeding", "backend\ScanlationTracker.Migration.Seeding\ScanlationTracker.Migration.Seeding.csproj", "{F6540108-320A-4D74-B2E3-7C1151F084C8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanlationTracker.Infrastructure.Tests", "backend\ScanlationTracker.Infrastructure.Tests\ScanlationTracker.Infrastructure.Tests.csproj", "{AEBDE95D-6FBF-4599-8595-E04CE20391E9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanlationTracker.Infrastructure.Tests", "backend\tests\ScanlationTracker.Infrastructure.Tests\ScanlationTracker.Infrastructure.Tests.csproj", "{AEBDE95D-6FBF-4599-8595-E04CE20391E9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanlationTracker.Core.Tests", "backend\ScanlationTracker.Core.Tests\ScanlationTracker.Core.Tests.csproj", "{CDB563CF-7AFD-4807-838A-3022A064EB9E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanlationTracker.Core.Tests", "backend\tests\ScanlationTracker.Core.Tests\ScanlationTracker.Core.Tests.csproj", "{CDB563CF-7AFD-4807-838A-3022A064EB9E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
