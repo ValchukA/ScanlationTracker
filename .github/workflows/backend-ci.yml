@@ -1,0 +1,90 @@
+name: Backend CI
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  filter-path:
+    name: Create path filters for other jobs
+    runs-on: ubuntu-latest
+    outputs:
+      run-build-test: ${{ steps.filter.outputs.run-build-test }}
+      run-build-push-image: ${{ steps.filter.outputs.run-build-push-image }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - id: filter
+      name: Create path filters for other jobs
+      uses: dorny/paths-filter@v3
+      with:
+        filters: |
+          run-build-test:
+            - 'backend/**'
+          run-build-push-image:
+            - 'backend/!(tests/**)'
+            - '.dockerignore'
+
+  build-test:
+    name: Build and test .NET projects
+    needs: filter-path
+    if: ${{ needs.filter-path.outputs.run-build-test == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: 9.0.x
+
+    - name: Build
+      run: dotnet build /warnaserror
+
+    - name: Test
+      run: dotnet test --no-build
+
+  build-push-image:
+    name: Build and push Docker images to GitHub Container Registry
+    needs:
+      - filter-path
+      - build-test
+    if: ${{ always()
+            && needs.filter-path.outputs.run-build-push-image == 'true'
+            && needs.build-test.result != 'failure' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - dockerfile: backend/ScanlationTracker.SeriesUpdater/Dockerfile
+            image-name: scanlationtracker.seriesupdater
+          - dockerfile: backend/ScanlationTracker.Api/Dockerfile
+            image-name: scanlationtracker.api
+          - dockerfile: backend/ScanlationTracker.Migration.Seeding/Dockerfile
+            image-name: scanlationtracker.migration.seeding
+    steps:
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.REPOSITORY_OWNER }}
+        password: ${{ secrets.GHCR_TOKEN }}
+
+    - id: to-lower
+      name: Convert GITHUB_REPOSITORY_OWNER to lowercase
+      run: echo "repository_owner_lowercase=${GITHUB_REPOSITORY_OWNER@L}" >> $GITHUB_OUTPUT
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build and push Docker image to GitHub Container Registry
+      uses: docker/build-push-action@v6
+      with:
+        file: ${{ matrix.dockerfile }}
+        tags: ghcr.io/${{ steps.to-lower.outputs.repository_owner_lowercase }}/${{ matrix.image-name }}:latest
+        cache-from: type=gha,scope=${{ matrix.image-name }}
+        cache-to: type=gha,mode=max,scope=${{ matrix.image-name }}
+        push: true
