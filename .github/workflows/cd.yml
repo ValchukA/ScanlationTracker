@@ -1,0 +1,16 @@
+name: CD
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy application using Docker Swarm Mode
+    runs-on: ubuntu-latest
+    steps:
+    - name: Configure SSH
+      run: |
+        echo "${{ secrets.SSH_SWARM_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 > ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.SSH_SWARM_HOST }} > ~/.ssh/known_hosts
+        ssh ${{ secrets.SSH_SWARM_USER }}@${{ secrets.SSH_SWARM_HOST }}

@@ -1,0 +1,23 @@
+services:
+  scanlationtracker.migration.seeding:
+    image: ghcr.io/valchuka/scanlationtracker.migration.seeding:latest
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    environment:
+      PostgreSql__ConnectionString: Host=postgresql;Username=postgres;Password=Passw0rd!;Database=ScanlationTrackerDb
+
+  postgresql:
+    image: postgres:17.4
+    environment:
+      POSTGRES_PASSWORD: Passw0rd!
+    ports:
+      - 5432:5432
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+
+volumes:
+  postgresql-data:
