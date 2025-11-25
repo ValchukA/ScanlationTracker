@@ -40,15 +40,18 @@ internal class RizzFablesPwScraper : IScanlationScraper
             {
                 _logger.LogInformation("Scraping updated series at {PageUrl}", page.Url);
 
-                var seriesUrls = ScrapeSeriesUrlsFromPageAsync(page, scrapedSeriesUrls);
+                var updatesSectionLocator = page
+                    .Locator("div:has(> h2:has-text('Latest Update')) + div");
+                var seriesUrls = ScrapeSeriesUrlsFromPageAsync(
+                    updatesSectionLocator,
+                    scrapedSeriesUrls);
 
                 await foreach (var seriesUrl in seriesUrls)
                 {
                     yield return seriesUrl;
                 }
 
-                var nextButtonLocator = page
-                    .Locator("div:has(> h2:has-text('Latest Update')) + div + div a:has-text('Next')");
+                var nextButtonLocator = updatesSectionLocator.Locator("+ div a:has-text('Next')");
                 var nextPageExists = await nextButtonLocator.CountAsync() == 1;
 
                 if (!nextPageExists)
@@ -91,11 +94,10 @@ internal class RizzFablesPwScraper : IScanlationScraper
     }
 
     private async IAsyncEnumerable<string> ScrapeSeriesUrlsFromPageAsync(
-        IPage page,
+        ILocator updatesSectionLocator,
         HashSet<string> scrapedSeriesUrls)
     {
-        var updateLocators = await page
-            .Locator("div:has(> h2:has-text('Latest Update')) + div > div").AllAsync();
+        var updateLocators = await updatesSectionLocator.Locator("> div").AllAsync();
 
         foreach (var updateLocator in updateLocators)
         {

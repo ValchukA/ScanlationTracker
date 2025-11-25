@@ -37,16 +37,19 @@ internal class AsuraScansPwScraper : IScanlationScraper
             {
                 _logger.LogInformation("Scraping updated series at {PageUrl}", page.Url);
 
-                var seriesUrls = ScrapeSeriesUrlsFromPageAsync(page, scrapedSeriesUrls);
+                var updatesSectionLocator = page
+                    .Locator("div:has(> h3:has-text('Latest Updates')) + div");
+                var seriesUrls = ScrapeSeriesUrlsFromPageAsync(
+                    updatesSectionLocator,
+                    scrapedSeriesUrls);
 
                 await foreach (var seriesUrl in seriesUrls)
                 {
                     yield return seriesUrl;
                 }
 
-                var nextPageUrl = await page
-                    .Locator("div:has(> h3:has-text('Latest Updates')) + div + div > a:has-text('Next')")
-                    .EvaluateAsync<string>("a => a.href");
+                var nextPageUrl = await updatesSectionLocator
+                    .Locator("+ div > a:has-text('Next')").EvaluateAsync<string>("a => a.href");
                 var nextPageExists = !nextPageUrl.EndsWith('#');
 
                 if (!nextPageExists)
@@ -87,11 +90,10 @@ internal class AsuraScansPwScraper : IScanlationScraper
     }
 
     private async IAsyncEnumerable<string> ScrapeSeriesUrlsFromPageAsync(
-        IPage page,
+        ILocator updatesSectionLocator,
         HashSet<string> scrapedSeriesUrls)
     {
-        var updateLocators = await page
-            .Locator("div:has(> h3:has-text('Latest Updates')) + div > div").AllAsync();
+        var updateLocators = await updatesSectionLocator.Locator("> div").AllAsync();
 
         foreach (var updateLocator in updateLocators)
         {
