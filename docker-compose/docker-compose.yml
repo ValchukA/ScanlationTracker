@@ -12,7 +12,10 @@ services:
         condition: service_healthy
     environment:
       DOTNET_ENVIRONMENT: Development
-      PostgreSql__ConnectionString: Host=postgresql;Username=postgres;Password=Passw0rd!;Database=ScanlationTrackerDb
+      PostgreSql__Host: postgresql
+      PostgreSql__Username: postgres
+      PostgreSql__Password: Passw0rd!
+      PostgreSql__Database: ScanlationTrackerDb
       OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
       OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: http://loki:3100/otlp/v1/logs
       OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: http://prometheus:9090/api/v1/otlp/v1/metrics
@@ -34,7 +37,10 @@ services:
         condition: service_healthy
     environment:
       DOTNET_ENVIRONMENT: Development
-      PostgreSql__ConnectionString: Host=postgresql;Username=postgres;Password=Passw0rd!;Database=ScanlationTrackerDb
+      PostgreSql__Host: postgresql
+      PostgreSql__Username: postgres
+      PostgreSql__Password: Passw0rd!
+      PostgreSql__Database: ScanlationTrackerDb
       OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
       OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: http://loki:3100/otlp/v1/logs
       OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: http://prometheus:9090/api/v1/otlp/v1/metrics
@@ -47,7 +53,10 @@ services:
       postgresql:
         condition: service_healthy
     environment:
-      PostgreSql__ConnectionString: Host=postgresql;Username=postgres;Password=Passw0rd!;Database=ScanlationTrackerDb
+      PostgreSql__Host: postgresql
+      PostgreSql__Username: postgres
+      PostgreSql__Password: Passw0rd!
+      PostgreSql__Database: ScanlationTrackerDb
 
   postgresql:
     image: postgres:17.4

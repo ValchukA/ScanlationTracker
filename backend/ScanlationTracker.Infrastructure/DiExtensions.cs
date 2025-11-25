@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using ScanlationTracker.Core.Repositories;
 using ScanlationTracker.Core.Scrapers;
 using ScanlationTracker.Core.UrlManagers;
@@ -34,7 +35,15 @@ public static class DiExtensions
             .GetRequiredSection(PostgreSqlSettings.SectionKey).Get<PostgreSqlSettings>()!;
         Validator.ValidateObject(settings, new ValidationContext(settings));
 
+        var connectionStringBuilder = new NpgsqlConnectionStringBuilder
+        {
+            Host = settings.Host,
+            Username = settings.Username,
+            Password = settings.Password,
+            Database = settings.Database,
+        };
+
         services.AddDbContextFactory<ScanlationDbContext>(options =>
-            options.UseNpgsql(settings.ConnectionString));
+            options.UseNpgsql(connectionStringBuilder.ConnectionString));
     }
 }

@@ -7,6 +7,13 @@ using ScanlationTracker.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var secretsDirectoryPath = builder.Configuration.GetValue<string>("SecretsDirectory");
+
+if (!string.IsNullOrEmpty(secretsDirectoryPath))
+{
+    builder.Configuration.AddKeyPerFile(secretsDirectoryPath);
+}
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();

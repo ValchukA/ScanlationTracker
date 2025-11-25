@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ScanlationTracker.Infrastructure;
@@ -14,6 +15,13 @@ await SeedScanlationGroupsAsync();
 ScanlationDbContext GetDbContext()
 {
     var builder = Host.CreateApplicationBuilder(args);
+    var secretsDirectoryPath = builder.Configuration.GetValue<string>("SecretsDirectory");
+
+    if (!string.IsNullOrEmpty(secretsDirectoryPath))
+    {
+        builder.Configuration.AddKeyPerFile(secretsDirectoryPath);
+    }
+
     builder.Services.AddPostgreSql(builder.Configuration);
     var host = builder.Build();
 

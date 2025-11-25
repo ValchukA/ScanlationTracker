@@ -7,6 +7,13 @@ using ScanlationTracker.SeriesUpdater;
 
 var builder = Host.CreateApplicationBuilder(args);
 
+var secretsDirectoryPath = builder.Configuration.GetValue<string>("SecretsDirectory");
+
+if (!string.IsNullOrEmpty(secretsDirectoryPath))
+{
+    builder.Configuration.AddKeyPerFile(secretsDirectoryPath);
+}
+
 builder.Services.AddHostedService<SeriesUpdaterWorker>();
 builder.Services.AddCore();
 builder.Services.AddInfrastructure(builder.Configuration);
