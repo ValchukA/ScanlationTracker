@@ -47,7 +47,8 @@ internal class RizzFablesPwScraper : IScanlationScraper
                     yield return seriesUrl;
                 }
 
-                var nextButtonLocator = page.Locator("a:has-text('Next')");
+                var nextButtonLocator = page
+                    .Locator("div:has(> h2:has-text('Latest Update')) + div + div a:has-text('Next')");
                 var nextPageExists = await nextButtonLocator.CountAsync() == 1;
 
                 if (!nextPageExists)

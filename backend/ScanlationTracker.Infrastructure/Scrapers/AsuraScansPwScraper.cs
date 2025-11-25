@@ -45,7 +45,8 @@ internal class AsuraScansPwScraper : IScanlationScraper
                 }
 
                 var nextPageUrl = await page
-                    .Locator("a:has-text('Next')").EvaluateAsync<string>("a => a.href");
+                    .Locator("div:has(> h3:has-text('Latest Updates')) + div + div > a:has-text('Next')")
+                    .EvaluateAsync<string>("a => a.href");
                 var nextPageExists = !nextPageUrl.EndsWith('#');
 
                 if (!nextPageExists)
