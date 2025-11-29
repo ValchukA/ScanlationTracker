@@ -1,0 +1,44 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migration-seeding-job
+spec:
+  template:
+    spec:
+      initContainers:
+      - name: db-wait
+        image: postgres:17.4
+        command: ["sh", "-c", "until pg_isready -h ${HOST}; do sleep 3; done"]
+        env:
+        - name: HOST
+          valueFrom:
+            configMapKeyRef:
+              name: postgresql-config
+              key: host
+      containers:
+      - name: migration-seeding
+        image: ${CONTAINER_REGISTRY_PATH}/scanlationtracker.migration.seeding:latest
+        env:
+        - name: PostgreSql__Host
+          valueFrom:
+            configMapKeyRef:
+              name: postgresql-config
+              key: host
+        - name: SecretsDirectory
+          value: /etc/secrets
+        volumeMounts:
+        - name: secret-volume
+          mountPath: /etc/secrets
+          readOnly: true
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: postgresql-secret
+          items:
+          - key: username
+            path: PostgreSql__Username
+          - key: password
+            path: PostgreSql__Password
+      imagePullSecrets:
+      - name: container-registry-secret
+      restartPolicy: Never

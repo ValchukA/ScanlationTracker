@@ -22,10 +22,10 @@ jobs:
       with:
         filters: |
           run-build-test:
-            - 'backend/**'
+            - "backend/**"
           run-build-push-image:
-            - 'backend/!(tests/**)'
-            - '.dockerignore'
+            - "backend/!(tests/**)"
+            - ".dockerignore"
 
   build-test:
     name: Build and test .NET projects
@@ -71,7 +71,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.REPOSITORY_OWNER }}
-        password: ${{ secrets.GHCR_TOKEN }}
+        password: ${{ secrets.GHCR_ACTIONS_TOKEN }}
 
     - id: to-lower
       name: Convert GITHUB_REPOSITORY_OWNER to lowercase
