@@ -88,4 +88,4 @@ spec:
           name: grafana-config
       - name: dashboards-volume
         configMap:
-          name: grafanadashboards-config
+          name: grafana-dashboards-config
