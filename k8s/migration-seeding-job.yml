@@ -1,0 +1,58 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migration-seeding-job
+spec:
+  template:
+    spec:
+      imagePullSecrets:
+      - name: container-registry-secret
+      restartPolicy: Never
+      nodeSelector:
+        performance: high
+      initContainers:
+      - name: db-wait
+        image: postgres:17.4
+        command:
+        - sh
+        - -c
+        - |
+          username=$(cat /etc/secrets/PostgreSql__Username) \
+          && until pg_isready -h ${HOST} -U ${username}; \
+          do \
+            sleep 3; \
+          done
+        env:
+        - name: HOST
+          valueFrom:
+            configMapKeyRef:
+              name: postgresql-config
+              key: host
+        volumeMounts:
+        - name: secret-volume
+          mountPath: /etc/secrets
+          readOnly: true
+      containers:
+      - name: migration-seeding
+        image: ${CONTAINER_REGISTRY_PATH}/scanlationtracker.migration.seeding:latest
+        env:
+        - name: PostgreSql__Host
+          valueFrom:
+            configMapKeyRef:
+              name: postgresql-config
+              key: host
+        - name: SecretsDirectory
+          value: /etc/secrets
+        volumeMounts:
+        - name: secret-volume
+          mountPath: /etc/secrets
+          readOnly: true
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: postgresql-secret
+          items:
+          - key: username
+            path: PostgreSql__Username
+          - key: password
+            path: PostgreSql__Password

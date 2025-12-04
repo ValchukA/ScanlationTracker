@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      nodeSelector:
+        performance: high
+      containers:
+      - name: postgresql
+        image: postgres:17.4
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER_FILE
+          value: /etc/secrets/username
+        - name: POSTGRES_PASSWORD_FILE
+          value: /etc/secrets/password
+        volumeMounts:
+        - name: secret-volume
+          mountPath: /etc/secrets
+          readOnly: true
+        - name: storage-volume
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: postgresql-secret
+      - name: storage-volume
+        persistentVolumeClaim:
+          claimName: postgresql-pvc

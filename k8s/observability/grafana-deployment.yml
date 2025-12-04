@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      nodeSelector:
+        performance: high
+      initContainers:
+      - name: loki-wait
+        image: alpine:3.22.2
+        command:
+          - sh
+          - -c
+          - |
+            until wget --spider ${LOKI_READY_ENDPOINT}; \
+            do \
+              sleep 3; \
+            done
+        env:
+        - name: LOKI_READY_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: opentelemetry-config
+              key: lokiReadyEndpoint
+      - name: prometheus-wait
+        image: alpine:3.22.2
+        command:
+          - sh
+          - -c
+          - |
+            until wget --spider ${PROMETHEUS_READY_ENDPOINT}; \
+            do \
+              sleep 3; \
+            done
+        env:
+        - name: PROMETHEUS_READY_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: opentelemetry-config
+              key: prometheusReadyEndpoint
+      containers:
+      - name: grafana
+        image: grafana/grafana:12.0.1
+        ports:
+        - containerPort: 3000
+        env:
+        - name: GF_SECURITY_ADMIN_USER__FILE
+          value: /etc/secrets/username
+        - name: GF_SECURITY_ADMIN_PASSWORD__FILE
+          value: /etc/secrets/password
+        - name: LOKI_URL
+          valueFrom:
+            configMapKeyRef:
+              name: opentelemetry-config
+              key: lokiUrl
+        - name: PROMETHEUS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: opentelemetry-config
+              key: prometheusUrl
+        volumeMounts:
+        - name: secret-volume
+          mountPath: /etc/secrets
+          readOnly: true
+        - name: config-volume
+          mountPath: /etc/grafana/provisioning/datasources/datasources.yml
+          subPath: grafana-datasources.yml
+        - name: config-volume
+          mountPath: /etc/grafana/provisioning/dashboards/dashboards.yml
+          subPath: grafana-dashboards.yml
+        - name: dashboards-volume
+          mountPath: /etc/dashboards
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: grafana-secret
+      - name: config-volume
+        configMap:
+          name: grafana-config
+      - name: dashboards-volume
+        configMap:
+          name: grafanadashboards-config

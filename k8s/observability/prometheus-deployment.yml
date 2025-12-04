@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      nodeSelector:
+        performance: high
+      containers:
+      - name: prometheus
+        image: prom/prometheus:v3.4.1
+        args:
+        - --web.enable-otlp-receiver
+        - --config.file=/dev/null
+        ports:
+        - containerPort: 9090
+        volumeMounts:
+        - name: storage-volume
+          mountPath: /prometheus
+      volumes:
+      - name: storage-volume
+        persistentVolumeClaim:
+          claimName: prometheus-pvc

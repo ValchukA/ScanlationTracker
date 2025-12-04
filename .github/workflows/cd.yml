@@ -1,0 +1,76 @@
+name: CD
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy application to Kubernetes cluster
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Configure SSH
+      run: |
+        install -m 600 -D /dev/null ~/.ssh/id_rsa
+        echo "${{ secrets.SSH_K8S_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.SSH_K8S_HOST }} > ~/.ssh/known_hosts
+
+    - id: copy-files
+      name: Copy Kubernetes manifests and seccomp profile to cluster
+      run: |
+        appDirectory=scanlationtracker
+        manifestsDirectory=${appDirectory}/manifests
+        seccompPath=${appDirectory}/seriesupdater-profile.json
+        grafanaDirectory=${appDirectory}/grafana
+
+        echo "manifestsDirectory=/${manifestsDirectory}" >> ${GITHUB_OUTPUT}
+        echo "seccompPath=/${seccompPath}" >> ${GITHUB_OUTPUT}
+        echo "grafanaDirectory=/${grafanaDirectory}" >> ${GITHUB_OUTPUT}
+
+        mkdir -p ${manifestsDirectory}
+        cp backend/ScanlationTracker.SeriesUpdater/seccomp-profile.json ${seccompPath}
+        cp -r observability ${grafanaDirectory}
+        export CONTAINER_REGISTRY_PATH=ghcr.io/${GITHUB_REPOSITORY_OWNER@L}
+        for filePath in $(find k8s -type f); \
+        do \
+          substitutedFilePath=${manifestsDirectory}/$(basename ${filePath})
+          envsubst '${CONTAINER_REGISTRY_PATH}' < ${filePath} > ${substitutedFilePath}; \
+        done
+
+        scp -r ${appDirectory} ${{ secrets.SSH_K8S_USER }}@${{ secrets.SSH_K8S_HOST }}:/
+
+    - name: Deploy application to Kubernetes cluster
+      run: |
+        ssh ${{ secrets.SSH_K8S_USER }}@${{ secrets.SSH_K8S_HOST }} "
+          kubectl create configmap seriesupdater-seccomp-config \
+            --from-file=${{ steps.copy-files.outputs.seccompPath }} \
+            --dry-run=client -o yaml \
+          | kubectl apply -f - \
+          && kubectl create configmap grafana-config \
+            --from-file=${{ steps.copy-files.outputs.grafanaDirectory }} \
+            --dry-run=client -o yaml \
+          | kubectl apply -f - \
+          && kubectl create configmap grafanadashboards-config \
+            --from-file=${{ steps.copy-files.outputs.grafanaDirectory }}/grafana-dashboards \
+            --dry-run=client -o yaml \
+          | kubectl apply -f - \
+          && kubectl create secret docker-registry container-registry-secret \
+            --docker-server=ghcr.io \
+            --docker-username=${{ github.REPOSITORY_OWNER }} \
+            --docker-password=${{ secrets.GHCR_K8S_TOKEN }} \
+            --dry-run=client -o yaml \
+          | kubectl apply -f - \
+          && kubectl create secret generic postgresql-secret \
+            --from-literal=username=${{ secrets.POSTGRESQL_USER }} \
+            --from-literal=password=${{ secrets.POSTGRESQL_PASSWORD }} \
+            --dry-run=client -o yaml \
+          | kubectl apply -f - \
+          && kubectl create secret generic grafana-secret \
+            --from-literal=username=${{ secrets.GRAFANA_USER }} \
+            --from-literal=password=${{ secrets.GRAFANA_PASSWORD }} \
+            --dry-run=client -o yaml \
+          | kubectl apply -f - \
+          && kubectl apply -f ${{ steps.copy-files.outputs.manifestsDirectory }}
+        "

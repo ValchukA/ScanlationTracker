@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      imagePullSecrets:
+      - name: container-registry-secret
+      serviceAccountName: jobwaiter-serviceaccount
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app: api
+      initContainers:
+      - name: migration-seeding-wait
+        image: alpine:3.22.2
+        command:
+          - sh
+          - -c
+          - |
+            set -e
+            serviceAccount=/var/run/secrets/kubernetes.io/serviceaccount
+            namespace=$(cat ${serviceAccount}/namespace)
+            token=$(cat ${serviceAccount}/token)
+            export SSL_CERT_FILE=${serviceAccount}/ca.crt
+            until \
+              wget -O - \
+                --header="Authorization: Bearer ${token}" \
+                "https://kubernetes.default.svc/apis/batch/v1/namespaces/${namespace}/jobs/migration-seeding-job" \
+              | grep '"succeeded": 1'; \
+            do \
+              sleep 3; \
+            done
+      - name: loki-wait
+        image: alpine:3.22.2
+        command:
+          - sh
+          - -c
+          - |
+            until wget --spider ${LOKI_READY_ENDPOINT}; \
+            do \
+              sleep 3; \
+            done
+        env:
+        - name: LOKI_READY_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: opentelemetry-config
+              key: lokiReadyEndpoint
+      - name: prometheus-wait
+        image: alpine:3.22.2
+        command:
+          - sh
+          - -c
+          - |
+            until wget --spider ${PROMETHEUS_READY_ENDPOINT}; \
+            do \
+              sleep 3; \
+            done
+        env:
+        - name: PROMETHEUS_READY_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: opentelemetry-config
+              key: prometheusReadyEndpoint
+      containers:
+      - name: api
+        image: ${CONTAINER_REGISTRY_PATH}/scanlationtracker.api:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: PostgreSql__Host
+          valueFrom:
+            configMapKeyRef:
+              name: postgresql-config
+              key: host
+        - name: OTEL_EXPORTER_OTLP_PROTOCOL
+          valueFrom:
+            configMapKeyRef:
+              name: opentelemetry-config
+              key: protocol
+        - name: OTEL_EXPORTER_OTLP_LOGS_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: opentelemetry-config
+              key: lokiLogsEndpoint
+        - name: OTEL_EXPORTER_OTLP_METRICS_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: opentelemetry-config
+              key: prometheusMetricsEndpoint
+        - name: SecretsDirectory
+          value: /etc/secrets
+        volumeMounts:
+        - name: secret-volume
+          mountPath: /etc/secrets
+          readOnly: true
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: postgresql-secret
+          items:
+          - key: username
+            path: PostgreSql__Username
+          - key: password
+            path: PostgreSql__Password

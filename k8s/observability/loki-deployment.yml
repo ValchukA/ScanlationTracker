@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loki-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loki
+  template:
+    metadata:
+      labels:
+        app: loki
+    spec:
+      nodeSelector:
+        performance: high
+      containers:
+      - name: loki
+        image: grafana/loki:3.5.1
+        ports:
+        - containerPort: 3100
+        volumeMounts:
+        - name: storage-volume
+          mountPath: /loki
+      volumes:
+      - name: storage-volume
+        persistentVolumeClaim:
+          claimName: loki-pvc

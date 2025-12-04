@@ -1,0 +1,128 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seriesupdater-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: seriesupdater
+  template:
+    metadata:
+      labels:
+        app: seriesupdater
+    spec:
+      imagePullSecrets:
+      - name: container-registry-secret
+      serviceAccountName: jobwaiter-serviceaccount
+      nodeSelector:
+        performance: high
+      initContainers:
+      - name: create-seccomp-profile
+        image: alpine:3.22.2
+        command: ["sh", "-c", "cp /etc/seccomp/seriesupdater-profile.json /var/lib/kubelet/seccomp/"]
+        volumeMounts:
+        - name: seccomp-volume
+          mountPath: /etc/seccomp
+        - name: host-seccomp-volume
+          mountPath: /var/lib/kubelet/seccomp
+      - name: migration-seeding-wait
+        image: alpine:3.22.2
+        command:
+          - sh
+          - -c
+          - |
+            set -e
+            serviceAccount=/var/run/secrets/kubernetes.io/serviceaccount
+            namespace=$(cat ${serviceAccount}/namespace)
+            token=$(cat ${serviceAccount}/token)
+            export SSL_CERT_FILE=${serviceAccount}/ca.crt
+            until \
+              wget -O - \
+                --header="Authorization: Bearer ${token}" \
+                "https://kubernetes.default.svc/apis/batch/v1/namespaces/${namespace}/jobs/migration-seeding-job" \
+              | grep '"succeeded": 1'; \
+            do \
+              sleep 3; \
+            done
+      - name: loki-wait
+        image: alpine:3.22.2
+        command:
+          - sh
+          - -c
+          - |
+            until wget --spider ${LOKI_READY_ENDPOINT}; \
+            do \
+              sleep 3; \
+            done
+        env:
+        - name: LOKI_READY_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: opentelemetry-config
+              key: lokiReadyEndpoint
+      - name: prometheus-wait
+        image: alpine:3.22.2
+        command:
+          - sh
+          - -c
+          - |
+            until wget --spider ${PROMETHEUS_READY_ENDPOINT}; \
+            do \
+              sleep 3; \
+            done
+        env:
+        - name: PROMETHEUS_READY_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: opentelemetry-config
+              key: prometheusReadyEndpoint
+      containers:
+      - name: seriesupdater
+        image: ${CONTAINER_REGISTRY_PATH}/scanlationtracker.seriesupdater:latest
+        securityContext:
+          seccompProfile:
+            type: Localhost
+            localhostProfile: seriesupdater-profile.json
+        env:
+        - name: PostgreSql__Host
+          valueFrom:
+            configMapKeyRef:
+              name: postgresql-config
+              key: host
+        - name: OTEL_EXPORTER_OTLP_PROTOCOL
+          valueFrom:
+            configMapKeyRef:
+              name: opentelemetry-config
+              key: protocol
+        - name: OTEL_EXPORTER_OTLP_LOGS_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: opentelemetry-config
+              key: lokiLogsEndpoint
+        - name: OTEL_EXPORTER_OTLP_METRICS_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: opentelemetry-config
+              key: prometheusMetricsEndpoint
+        - name: SecretsDirectory
+          value: /etc/secrets
+        volumeMounts:
+        - name: secret-volume
+          mountPath: /etc/secrets
+          readOnly: true
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: postgresql-secret
+          items:
+          - key: username
+            path: PostgreSql__Username
+          - key: password
+            path: PostgreSql__Password
+      - name: seccomp-volume
+        configMap:
+          name: seriesupdater-seccomp-config
+      - name: host-seccomp-volume
+        hostPath:
+          path: /var/lib/kubelet/seccomp

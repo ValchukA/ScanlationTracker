@@ -1,0 +1,11 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jobwaiter-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: jobwaiter-serviceaccount
+roleRef:
+  kind: Role
+  name: jobwaiter-role
+  apiGroup: rbac.authorization.k8s.io
