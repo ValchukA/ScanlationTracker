@@ -7,6 +7,6 @@ data:
   lokiUrl: http://loki-service:3100
   lokiLogsEndpoint: http://loki-service:3100/otlp/v1/logs
   lokiReadyEndpoint: http://loki-service:3100/ready
-  prometheusUrl: http://rometheus-service:9090
+  prometheusUrl: http://prometheus-service:9090
   prometheusMetricsEndpoint: http://prometheus-service:9090/api/v1/otlp/v1/metrics
   prometheusReadyEndpoint: http://prometheus-service:9090/-/ready
