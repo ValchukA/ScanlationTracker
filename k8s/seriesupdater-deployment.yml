@@ -90,6 +90,11 @@ spec:
             configMapKeyRef:
               name: postgresql-config
               key: host
+        - name: Playwright__TimeoutInSeconds
+          valueFrom:
+            configMapKeyRef:
+              name: seriesupdater-config
+              key: playwrightTimeoutInSeconds
         - name: OTEL_EXPORTER_OTLP_PROTOCOL
           valueFrom:
             configMapKeyRef:

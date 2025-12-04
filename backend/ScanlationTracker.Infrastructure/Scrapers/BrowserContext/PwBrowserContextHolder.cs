@@ -40,6 +40,9 @@ internal class PwBrowserContextHolder : IPwBrowserContextHolder
                             "--blink-settings=imagesEnabled=false",
                         ],
                     });
+
+                var timeout = TimeSpan.FromSeconds(_settings.TimeoutInSeconds).Milliseconds;
+                _context.SetDefaultTimeout(timeout);
             }
         }
         finally

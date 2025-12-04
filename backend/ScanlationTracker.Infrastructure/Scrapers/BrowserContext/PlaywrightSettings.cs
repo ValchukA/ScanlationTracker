@@ -11,4 +11,7 @@ internal class PlaywrightSettings
 
     [Required]
     public required string AdBlockExtensionPath { get; init; }
+
+    [Range(15, 600)]
+    public required int TimeoutInSeconds { get; init; }
 }
