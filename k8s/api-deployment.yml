@@ -22,6 +22,8 @@ spec:
         labelSelector:
           matchLabels:
             app: api
+        matchLabelKeys:
+        - pod-template-hash
       initContainers:
       - name: migration-seeding-wait
         image: alpine:3.22.2
