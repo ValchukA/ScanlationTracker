@@ -41,8 +41,8 @@ internal class PwBrowserContextHolder : IPwBrowserContextHolder
                         ],
                     });
 
-                var timeout = TimeSpan.FromSeconds(_settings.TimeoutInSeconds).Milliseconds;
-                _context.SetDefaultTimeout(timeout);
+                var timeout = TimeSpan.FromSeconds(_settings.TimeoutInSeconds).TotalMilliseconds;
+                _context.SetDefaultTimeout((float)timeout);
             }
         }
         finally
