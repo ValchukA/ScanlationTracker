@@ -31,7 +31,7 @@ internal class AsuraScansPwScraper : IScanlationScraper
         {
             var scrapedSeriesUrls = new HashSet<string>();
 
-            await page.GotoAsync(_latestUpdatesUrl);
+            await page.GotoAsync(_latestUpdatesUrl, new() { Timeout = 150000 });
 
             while (true)
             {
