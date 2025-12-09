@@ -3,7 +3,7 @@ name: Backend CI
 on:
   push:
     branches:
-      - master
+    - master
 
 jobs:
   filter-path:
@@ -50,8 +50,8 @@ jobs:
   build-push-image:
     name: Build and push Docker images to GitHub Container Registry
     needs:
-      - filter-path
-      - build-test
+    - filter-path
+    - build-test
     if: ${{ always()
             && needs.filter-path.outputs.run-build-push-image == 'true'
             && needs.build-test.result != 'failure' }}
@@ -59,12 +59,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - dockerfile: backend/ScanlationTracker.SeriesUpdater/Dockerfile
-            imageName: scanlationtracker.seriesupdater
-          - dockerfile: backend/ScanlationTracker.Api/Dockerfile
-            imageName: scanlationtracker.api
-          - dockerfile: backend/ScanlationTracker.Migration.Seeding/Dockerfile
-            imageName: scanlationtracker.migration.seeding
+        - dockerfile: backend/ScanlationTracker.SeriesUpdater/Dockerfile
+          imageName: scanlationtracker.seriesupdater
+        - dockerfile: backend/ScanlationTracker.Api/Dockerfile
+          imageName: scanlationtracker.api
+        - dockerfile: backend/ScanlationTracker.Migration.Seeding/Dockerfile
+          imageName: scanlationtracker.migration.seeding
     steps:
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v3

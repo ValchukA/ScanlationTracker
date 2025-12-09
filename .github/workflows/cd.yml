@@ -33,10 +33,12 @@ jobs:
         cp backend/ScanlationTracker.SeriesUpdater/seccomp-profile.json ${seccompPath}
         cp -r observability ${grafanaDirectory}
         export CONTAINER_REGISTRY_PATH=ghcr.io/${GITHUB_REPOSITORY_OWNER@L}
+        export DOMAIN_NAME=${{ vars.DOMAIN_NAME }}
         for filePath in $(find k8s -type f); \
         do \
           substitutedFilePath=${manifestsDirectory}/$(basename ${filePath})
-          envsubst '${CONTAINER_REGISTRY_PATH}' < ${filePath} > ${substitutedFilePath}; \
+          variableNames='${CONTAINER_REGISTRY_PATH} ${DOMAIN_NAME}'
+          envsubst "${variableNames}" < ${filePath} > ${substitutedFilePath}; \
         done
 
         scp -r ${appDirectory} ${{ secrets.SSH_K8S_USER }}@${{ secrets.SSH_K8S_HOST }}:/

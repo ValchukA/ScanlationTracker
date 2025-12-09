@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: scanlationtracker-ingress
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: default-stripprefix-middleware@kubernetescrd
+    cert-manager.io/cluster-issuer: letsencrypt-clusterissuer
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: api-service
+            port:
+              number: 8080
+      - path: /grafana
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana-service
+            port:
+              number: 3000
+  tls:
+  - hosts:
+    - ${DOMAIN_NAME}
+    secretName: letsencrypt-crt-secret
