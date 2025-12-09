@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   name: scanlationtracker-ingress
   annotations:
-    traefik.ingress.kubernetes.io/router.middlewares: default-stripprefix-middleware@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: default-stripprefix-middleware@kubernetescrd,default-httpsredirect-middleware@kubernetescrd
     cert-manager.io/cluster-issuer: letsencrypt-clusterissuer
 spec:
   rules:
