@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-ingress
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: default-httpsredirect-middleware@kubernetescrd
+    cert-manager.io/cluster-issuer: letsencrypt-clusterissuer
+spec:
+  rules:
+  - host: api.${DOMAIN_NAME}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: api-service
+            port:
+              number: 8080
+  tls:
+  - hosts:
+    - api.${DOMAIN_NAME}
+    secretName: api-letsencryptcrt-secret

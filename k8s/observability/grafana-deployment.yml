@@ -57,8 +57,6 @@ spec:
           value: /etc/secrets/username
         - name: GF_SECURITY_ADMIN_PASSWORD__FILE
           value: /etc/secrets/password
-        - name: GF_SERVER_ROOT_URL
-          value: "%(protocol)s://%(domain)s:%(http_port)s/grafana"
         - name: LOKI_URL
           valueFrom:
             configMapKeyRef:

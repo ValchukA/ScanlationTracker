@@ -41,6 +41,7 @@ jobs:
           envsubst "${variableNames}" < ${filePath} > ${substitutedFilePath}; \
         done
 
+        ssh ${{ secrets.SSH_K8S_USER }}@${{ secrets.SSH_K8S_HOST }} "rm -rf /${appDirectory}"
         scp -r ${appDirectory} ${{ secrets.SSH_K8S_USER }}@${{ secrets.SSH_K8S_HOST }}:/
 
     - name: Create Kubernetes configmaps
